@@ -7,6 +7,7 @@ const form = document.getElementById("item-form");
 const message = document.getElementById("editor-message");
 const itemList = document.getElementById("item-list");
 let items = [];
+let savedAdminUser = null;
 
 function isAdmin(user) {
   return user?.email?.toLowerCase() === ADMIN_EMAIL;
@@ -195,6 +196,15 @@ async function enterAdmin(user) {
   await loadItems();
 }
 
+function offerSavedSession(user) {
+  if (!isAdmin(user)) return;
+  savedAdminUser = user;
+  document.getElementById("login-message").textContent = `A saved session exists for ${user.email}. Click Enter Editor to continue, or sign out to test another account.`;
+  document.getElementById("google-login").textContent = "Enter Editor";
+  document.getElementById("sign-out").hidden = false;
+  document.getElementById("account-label").textContent = user.email;
+}
+
 renderControls();
 resetForm();
 form.addEventListener("submit", saveItem);
@@ -209,14 +219,17 @@ document.getElementById("publish-item").addEventListener("click", () => {
   form.elements.is_published.checked = true;
   form.requestSubmit();
 });
-document.getElementById("google-login").addEventListener("click", () => supabase.auth.signInWithOAuth({
-  provider: "google",
-  options: { redirectTo: location.href, queryParams: { prompt: "select_account" } },
-}));
+document.getElementById("google-login").addEventListener("click", () => {
+  if (savedAdminUser) return enterAdmin(savedAdminUser);
+  return supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: location.href, queryParams: { prompt: "select_account" } },
+  });
+});
 document.getElementById("sign-out").addEventListener("click", async () => { await supabase.auth.signOut(); location.reload(); });
 
 const { data: { session } } = await supabase.auth.getSession();
-if (session?.user) enterAdmin(session.user);
+if (session?.user) offerSavedSession(session.user);
 supabase.auth.onAuthStateChange((_event, nextSession) => {
-  if (nextSession?.user && document.getElementById("admin-app").hidden) enterAdmin(nextSession.user);
+  if (nextSession?.user && document.getElementById("admin-app").hidden) offerSavedSession(nextSession.user);
 });

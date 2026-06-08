@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, getTheme, ITEM_MODES, normalizeItem } from "./item-model.js";
+import { buildRequestEmail, getTheme, ITEM_MODES, normalizeItem, normalizeItems } from "./item-model.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const demoItem = normalizeItem({
@@ -20,7 +20,7 @@ const demoItem = normalizeItem({
   is_published: true,
 });
 
-let items = [demoItem];
+let items = [];
 const views = [...document.querySelectorAll(".view")];
 const navButtons = [...document.querySelectorAll("[data-view]")];
 const brandLogo = document.getElementById("brand-logo");
@@ -71,11 +71,23 @@ function renderHome() {
     <button class="featured-image" data-item="${escapeHtml(featured.slug)}" aria-label="Open ${escapeHtml(featured.title)}">
       <img src="${escapeHtml(featured.main_image_url || "images/items/demo-item.png")}" alt="${escapeHtml(featured.title)}" />
     </button>
-  </div>` : "";
+  </div>` : `<div class="empty-state">
+    <span class="kicker">The collection is currently empty</span>
+    <h2>No items are available right now.</h2>
+    <p>We apologize. New pieces will appear here when they are ready.</p>
+  </div>`;
 }
 
 function renderCollection() {
-  document.getElementById("item-grid").innerHTML = items.map(itemCard).join("");
+  const container = document.getElementById("item-grid");
+  container.classList.toggle("empty", items.length === 0);
+  container.innerHTML = items.length
+    ? items.map(itemCard).join("")
+    : `<div class="empty-state">
+        <span class="kicker">Nothing currently available</span>
+        <h2>There are no items at the moment.</h2>
+        <p>We apologize. Please check back later for the next release.</p>
+      </div>`;
 }
 
 function renderDetail(item) {
@@ -141,7 +153,7 @@ function showItem(slug) {
 
 async function loadItems() {
   const { data, error } = await supabase.from("public_shop_items").select("*").order("created_at", { ascending: false });
-  if (!error && data?.length) items = data.map(normalizeItem);
+  if (!error) items = normalizeItems(data);
   renderHome();
   renderCollection();
   bindButtons();

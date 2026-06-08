@@ -3,7 +3,7 @@ export const ORDER_EMAIL = "simon_j_brookes@icloud.com";
 export const THEMES = {
   green: {
     name: "Fresh Green",
-    logo: "images/logos/ships-main-black.png",
+    logo: "images/logos/ships-main-black-display.png",
     background: "#f3f8ef",
     surface: "#ffffff",
     soft: "#e2f2dc",
@@ -13,7 +13,7 @@ export const THEMES = {
   },
   orange: {
     name: "Soft Orange",
-    logo: "images/logos/ships-main-black.png",
+    logo: "images/logos/ships-main-black-display.png",
     background: "#fff5e8",
     surface: "#fffdf8",
     soft: "#ffe4ca",
@@ -23,7 +23,7 @@ export const THEMES = {
   },
   blue: {
     name: "Clear Blue",
-    logo: "images/logos/ships-main-black.png",
+    logo: "images/logos/ships-main-black-display.png",
     background: "#f1f9fc",
     surface: "#ffffff",
     soft: "#dceff7",
@@ -33,7 +33,7 @@ export const THEMES = {
   },
   red: {
     name: "Studio Red",
-    logo: "images/logos/ships-main-black.png",
+    logo: "images/logos/ships-main-black-display.png",
     background: "#fff4f2",
     surface: "#ffffff",
     soft: "#ffe0dc",
@@ -43,7 +43,7 @@ export const THEMES = {
   },
   yellow: {
     name: "Warm Yellow",
-    logo: "images/logos/ships-main-black.png",
+    logo: "images/logos/ships-main-black-display.png",
     background: "#fff9eb",
     surface: "#fffefa",
     soft: "#ffedbd",
@@ -53,7 +53,7 @@ export const THEMES = {
   },
   mono: {
     name: "Monochrome",
-    logo: "images/logos/ships-main-white.png",
+    logo: "images/logos/ships-main-white-display.png",
     background: "#101010",
     surface: "#181818",
     soft: "#282621",
@@ -119,6 +119,10 @@ export function normalizeItem(item = {}) {
     is_featured: Boolean(item.is_featured),
     is_published: Boolean(item.is_published),
   };
+}
+
+export function normalizeItems(items = []) {
+  return Array.isArray(items) ? items.map(normalizeItem) : [];
 }
 
 export function getTheme(themeName) {

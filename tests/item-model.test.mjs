@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   buildRequestEmail,
   normalizeItem,
+  normalizeItems,
   parseLines,
   parseGallery,
 } from "../docs/assets/item-model.js";
@@ -20,6 +21,17 @@ test("normalizeItem rejects unsupported item modes and themes", () => {
   const item = normalizeItem({ item_mode: "instant-checkout", theme: "unknown" });
   assert.equal(item.item_mode, "regular");
   assert.equal(item.theme, "mono");
+});
+
+test("normalizeItems preserves an intentionally empty collection", () => {
+  assert.deepEqual(normalizeItems([]), []);
+});
+
+test("normalizeItems normalizes every supplied item", () => {
+  const items = normalizeItems([{ title: "One" }, { title: "Two", item_mode: "custom" }]);
+  assert.equal(items.length, 2);
+  assert.equal(items[0].title, "One");
+  assert.equal(items[1].item_mode, "custom");
 });
 
 test("parseLines removes blank entries and surrounding whitespace", () => {

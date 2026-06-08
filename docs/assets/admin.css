@@ -13,7 +13,7 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
 .admin-header { min-height: 78px; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 22px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.9); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(14px); }
-.admin-header img { width: 146px; height: 46px; object-fit: contain; display: block; }
+.admin-header img { width: 190px; height: auto; max-height: 64px; object-fit: contain; display: block; }
 .header-actions, .toolbar-actions, .status-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 main { max-width: 1500px; margin: 0 auto; padding: 24px; }
 .login-panel { max-width: 680px; margin: 11vh auto; padding: 48px; background: var(--panel); border: 1px solid var(--line); }
