@@ -59,7 +59,6 @@ nav button:hover, nav button.active { color: var(--ink); background: var(--soft)
 .page-intro p { max-width: 630px; color: var(--muted); font-size: 18px; }
 .item-grid { max-width: 1240px; margin: 0 auto; padding: 0 24px 100px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
 .item-card { min-height: 620px; display: grid; grid-template-rows: 1fr auto; background: var(--card-soft); color: var(--card-ink); border: 1px solid var(--card-line); }
-.item-card:nth-child(3n + 2) { transform: translateY(54px); }
 .item-image { min-height: 390px; background: color-mix(in srgb, var(--card-surface) 82%, var(--card-soft)); }
 .item-card-copy { padding: 28px; border-top: 5px solid var(--card-accent); }
 .item-card h2 { margin: 9px 0; font-family: var(--serif); font-size: 43px; font-weight: 400; }
@@ -100,7 +99,6 @@ footer a { color: inherit; }
   .orbit-one { width: 92vw; }
   .orbit-two { width: 70vw; height: 340px; }
   .item-grid, .options-layout { grid-template-columns: 1fr; }
-  .item-card:nth-child(3n + 2) { transform: none; }
   .featured-image, .gallery-main { min-height: 380px; }
   .detail-copy { position: static; }
 }
