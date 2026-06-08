@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SHIPS small-run pieces made and prepared individually by request." />
+    <title>SHIPS</title>
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="assets/site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <button class="brand" data-view="home" aria-label="Go to home">
+        <img id="brand-logo" src="images/logos/ships-main-white.png" alt="SHIPS" />
+      </button>
+      <nav aria-label="Main navigation">
+        <button data-view="home" class="active">Studio</button>
+        <button data-view="collection">Collection</button>
+        <button data-view="process">How Requests Work</button>
+        <button data-view="contact">Contact</button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="view active" id="home">
+        <section class="hero">
+          <div class="hero-copy">
+            <span class="kicker">Small runs / prepared individually</span>
+            <h1>Made with room for you.</h1>
+            <p>Limited pieces, personal requests, and optional custom details. Every order begins with a conversation.</p>
+            <button class="primary-action" data-view="collection">Explore the collection</button>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <span class="orbit orbit-one"></span>
+            <span class="orbit orbit-two"></span>
+            <img src="images/logos/the-ships-shop.png" alt="" />
+          </div>
+        </section>
+        <section class="featured" id="featured-item"></section>
+      </div>
+
+      <div class="view" id="collection">
+        <section class="page-intro">
+          <span class="kicker">Current pieces</span>
+          <h1>The collection</h1>
+          <p>Some pieces are offered as designed. Others leave room for names, words, colors, or a new idea.</p>
+        </section>
+        <section class="item-grid" id="item-grid"></section>
+      </div>
+
+      <div class="view" id="item-detail"></div>
+
+      <div class="view" id="process">
+        <section class="page-intro narrow">
+          <span class="kicker">Personal, without being complicated</span>
+          <h1>How requests work</h1>
+        </section>
+        <section class="process-grid">
+          <article><span>01</span><h2>Choose a piece</h2><p>Read its available sizes, colors, and customization possibilities.</p></article>
+          <article><span>02</span><h2>Send a request</h2><p>Your email opens with the important questions already written. Add your choices and send it.</p></article>
+          <article><span>03</span><h2>Confirm the details</h2><p>You receive a personal confirmation covering the final design, price, production time, and shipping.</p></article>
+        </section>
+      </div>
+
+      <div class="view" id="contact">
+        <section class="contact-section">
+          <span class="kicker">Questions and unusual ideas welcome</span>
+          <h1>Start a conversation.</h1>
+          <p>Not sure whether an idea can be made? Ask before submitting a request.</p>
+          <a class="primary-action" href="mailto:simon_j_brookes@icloud.com?subject=Studio%20question">Email the studio</a>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <span>&copy; <span id="year"></span> SHIPS</span>
+      <span>Made to request, confirmed personally</span>
+      <a href="admin.html">Private editor</a>
+    </footer>
+
+    <script type="module" src="assets/site.js"></script>
+  </body>
+</html>

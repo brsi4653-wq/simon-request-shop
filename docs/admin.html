@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Shop Editor | SHIPS</title>
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="assets/admin.css" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <a href="index.html"><img src="images/logos/ships-tag.png" alt="SHIPS" /></a>
+      <div class="header-actions">
+        <span id="account-label">Private shop editor</span>
+        <button id="sign-out" class="quiet-button" hidden>Sign Out</button>
+        <a class="quiet-button" href="index.html">View Shop</a>
+      </div>
+    </header>
+
+    <main>
+      <section id="login-panel" class="login-panel">
+        <span class="eyebrow">Private Administration</span>
+        <h1>Shop Editor</h1>
+        <p>Sign in with the authorized Google account to manage request-based items.</p>
+        <button id="google-login" class="primary-button">Continue With Google</button>
+        <p id="login-message" class="message"></p>
+      </section>
+
+      <section id="admin-app" hidden>
+        <aside class="item-sidebar">
+          <div class="sidebar-heading">
+            <div>
+              <span class="eyebrow">Items</span>
+              <h2>Collection</h2>
+            </div>
+            <button id="new-item" class="icon-button" type="button" title="Create item" aria-label="Create item">+</button>
+          </div>
+          <div id="item-list" class="item-list"></div>
+        </aside>
+
+        <section class="editor">
+          <div class="editor-toolbar">
+            <div>
+              <span class="eyebrow">Item Editor</span>
+              <h1 id="editor-title">New Item</h1>
+            </div>
+            <div class="toolbar-actions">
+              <button id="duplicate-item" class="quiet-button" type="button">Duplicate</button>
+              <button id="delete-item" class="danger-button" type="button">Delete</button>
+              <button class="quiet-button" type="submit" form="item-form">Save Draft</button>
+              <button id="publish-item" class="primary-button" type="button">Publish Item</button>
+            </div>
+          </div>
+
+          <p id="editor-message" class="message"></p>
+
+          <form id="item-form">
+            <input id="item-id" name="id" type="hidden" />
+            <div class="status-row">
+              <label class="check-control"><input name="is_published" type="checkbox" /> Published</label>
+              <label class="check-control"><input name="is_featured" type="checkbox" /> Featured on homepage</label>
+            </div>
+
+            <div class="form-grid">
+              <label>Item title<input name="title" required /></label>
+              <label>URL name<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></label>
+              <label>Small label<input name="eyebrow" placeholder="Made to request" /></label>
+              <label>Item mode<select name="item_mode"><option value="regular">Regular item</option><option value="custom">Custom item</option><option value="hybrid">Regular with optional custom request</option></select></label>
+            </div>
+
+            <label>Short summary<textarea name="summary" rows="3"></textarea></label>
+            <label>Full description<textarea name="description" rows="7"></textarea></label>
+            <div class="form-grid">
+              <label>Price note<input name="price_note" placeholder="Final quote confirmed by email" /></label>
+              <label>Production note<input name="production_note" /></label>
+            </div>
+
+            <label>Available sizes <small>One per line. Shown as information, not dropdowns.</small><textarea name="sizes" rows="5"></textarea></label>
+            <label>Available colors <small>One per line. Shown as information, not dropdowns.</small><textarea name="colors" rows="5"></textarea></label>
+            <label>Customization notes <small>One per line. Use for custom or hybrid items.</small><textarea name="customization_options" rows="5"></textarea></label>
+
+            <fieldset>
+              <legend>Item Theme</legend>
+              <div id="theme-options" class="theme-options"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Images</legend>
+              <div class="image-controls">
+                <img id="main-preview" alt="Main item preview" hidden />
+                <div>
+                  <label>Main image URL<input name="main_image_url" /></label>
+                  <label>Upload main image<input id="main-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+                </div>
+              </div>
+              <label>Gallery image URLs <small>One per line</small><textarea name="gallery_urls" rows="5"></textarea></label>
+              <label>Upload gallery images<input id="gallery-files" type="file" accept="image/jpeg,image/png,image/webp" multiple /></label>
+            </fieldset>
+
+            <details>
+              <summary>Email request wording</summary>
+              <div class="form-grid">
+                <label>Email subject override<input name="request_subject" /></label>
+                <label>Email opening text<textarea name="request_intro" rows="4"></textarea></label>
+              </div>
+            </details>
+          </form>
+        </section>
+
+        <aside class="preview-panel">
+          <span class="eyebrow">Request Preview</span>
+          <div id="editor-preview"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="assets/admin.js"></script>
+  </body>
+</html>
