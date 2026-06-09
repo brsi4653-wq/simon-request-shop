@@ -8,7 +8,7 @@ export const THEMES = {
     surface: "#ffffff",
     soft: "#e2f2dc",
     ink: "#173a24",
-    muted: "#5d7564",
+    muted: "#506757",
     accent: "#72ce54",
   },
   orange: {
@@ -28,7 +28,7 @@ export const THEMES = {
     surface: "#ffffff",
     soft: "#dceff7",
     ink: "#143644",
-    muted: "#5a7782",
+    muted: "#4d6974",
     accent: "#38b6ff",
   },
   red: {
@@ -48,7 +48,7 @@ export const THEMES = {
     surface: "#fffefa",
     soft: "#ffedbd",
     ink: "#49351c",
-    muted: "#826e52",
+    muted: "#745f43",
     accent: "#ffae4b",
   },
   mono: {

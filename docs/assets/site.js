@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, getTheme, ITEM_MODES, normalizeItem, normalizeItems } from "./item-model.js";
+import { buildRequestEmail, getTheme, ITEM_MODES, normalizeItem, normalizeItems } from "./item-model.js?v=20260608-grid2";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const demoItem = normalizeItem({
@@ -46,7 +46,8 @@ function listBlock(title, values) {
 }
 
 function itemCard(item) {
-  return `<article class="item-card" style="--card-accent:${getTheme(item.theme).accent};--card-soft:${getTheme(item.theme).soft}">
+  const theme = getTheme(item.theme);
+  return `<article class="item-card" data-theme="${escapeHtml(item.theme)}" style="--card-accent:${theme.accent};--card-soft:${theme.soft};--card-surface:${theme.surface};--card-ink:${theme.ink};--card-muted:${theme.muted};--card-line:color-mix(in srgb, ${theme.ink} 16%, transparent)">
     <button class="item-image" data-item="${escapeHtml(item.slug)}" aria-label="Open ${escapeHtml(item.title)}">
       <img src="${escapeHtml(item.main_image_url || "images/items/demo-item.png")}" alt="${escapeHtml(item.title)}" />
     </button>
