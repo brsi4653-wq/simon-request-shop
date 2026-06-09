@@ -7,7 +7,7 @@
     <title>Shop Editor | SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css?v=20260608-collections" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260608-collections2" />
   </head>
   <body>
     <header class="admin-header">
@@ -30,6 +30,14 @@
 
       <section id="admin-app" hidden>
         <aside class="item-sidebar">
+          <div class="collection-manager-heading">
+            <div>
+              <span class="eyebrow">Public Filters</span>
+              <h2>Collections</h2>
+            </div>
+            <button id="new-collection" class="new-collection-button" type="button">New Collection</button>
+          </div>
+          <div id="collection-manager" class="collection-manager"></div>
           <div class="sidebar-heading">
             <div>
               <span class="eyebrow">Items</span>
@@ -38,14 +46,6 @@
             <button id="new-item" class="icon-button" type="button" title="Create item" aria-label="Create item">+</button>
           </div>
           <div id="item-list" class="item-list"></div>
-          <div class="collection-manager-heading">
-            <div>
-              <span class="eyebrow">Public Filters</span>
-              <h2>Collections</h2>
-            </div>
-            <button id="new-collection" class="icon-button" type="button" title="Create collection" aria-label="Create collection">+</button>
-          </div>
-          <div id="collection-manager" class="collection-manager"></div>
         </aside>
 
         <section class="editor">
@@ -130,6 +130,6 @@
       </section>
     </main>
 
-    <script type="module" src="assets/admin.js?v=20260608-collections"></script>
+    <script type="module" src="assets/admin.js?v=20260608-collections2"></script>
   </body>
 </html>

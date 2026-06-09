@@ -155,7 +155,7 @@ async function loadAdminData(preferredItemId = "") {
     supabase.from("shop_item_collections").select("item_id, collection_id"),
   ]);
   if (collectionResult.error || membershipResult.error) {
-    return setMessage("Collections are not ready yet. Run supabase-shop-collections-migration.sql in Supabase once.", true);
+    return setMessage("Collections are not ready yet. Run supabase-shop-collections-step-1.sql, then supabase-shop-collections-step-2.sql in Supabase.", true);
   }
   if (itemResult.error) return setMessage("The shop database is not ready yet. Run supabase-shop-setup.sql in Supabase.", true);
   collections = normalizeCollections(collectionResult.data || []);

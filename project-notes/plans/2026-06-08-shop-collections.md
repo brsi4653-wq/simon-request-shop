@@ -24,7 +24,8 @@
 ### Task 2: Safe Supabase Migration
 
 **Files:**
-- Create: `supabase-shop-collections-migration.sql`
+- Create: `supabase-shop-collections-step-1.sql`
+- Create: `supabase-shop-collections-step-2.sql`
 - Modify: `supabase-shop-setup.sql`
 
 - [ ] Add collection and membership tables with admin-only RLS.

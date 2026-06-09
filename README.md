@@ -23,9 +23,10 @@ If the shop was already set up before collections were added:
 
 1. Open the existing Supabase project.
 2. Open **SQL Editor** and create a new query.
-3. Paste the complete contents of `supabase-shop-collections-migration.sql`.
-4. Click **Run** once.
-5. Upload the updated contents of `docs` to GitHub Pages.
+3. Paste the complete contents of `supabase-shop-collections-step-1.sql`, press `Ctrl+A` so the entire query is selected, then click **Run**.
+4. Confirm the result shows `shop_collections` and `shop_item_collections`.
+5. Create another new query. Paste the complete contents of `supabase-shop-collections-step-2.sql`, press `Ctrl+A`, then click **Run**.
+6. Upload the updated contents of `docs` to GitHub Pages.
 
 The collection migration is additive. It does not update, delete, publish, unpublish, or reassign any existing item. Existing published items remain visible under **All** until collections are assigned in the editor.
 
