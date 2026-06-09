@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, getTheme, ITEM_MODES, normalizeItem, normalizeItems } from "./item-model.js?v=20260608-grid2";
+import { buildRequestEmail, filterItemsByCollection, getTheme, ITEM_MODES, normalizeCollections, normalizeItem, normalizeItems } from "./item-model.js?v=20260608-collections";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const demoItem = normalizeItem({
@@ -21,6 +21,8 @@ const demoItem = normalizeItem({
 });
 
 let items = [];
+let collections = [];
+let activeCollection = "all";
 const views = [...document.querySelectorAll(".view")];
 const navButtons = [...document.querySelectorAll("[data-view]")];
 const brandLogo = document.getElementById("brand-logo");
@@ -81,14 +83,30 @@ function renderHome() {
 
 function renderCollection() {
   const container = document.getElementById("item-grid");
-  container.classList.toggle("empty", items.length === 0);
-  container.innerHTML = items.length
-    ? items.map(itemCard).join("")
+  const filteredItems = filterItemsByCollection(items, activeCollection);
+  const activeName = collections.find((collection) => collection.slug === activeCollection)?.name;
+  container.classList.toggle("empty", filteredItems.length === 0);
+  container.innerHTML = filteredItems.length
+    ? filteredItems.map(itemCard).join("")
     : `<div class="empty-state">
-        <span class="kicker">Nothing currently available</span>
-        <h2>There are no items at the moment.</h2>
+        <span class="kicker">${activeCollection === "all" ? "Nothing currently available" : "This collection is currently empty"}</span>
+        <h2>${activeCollection === "all" ? "There are no items at the moment." : `No pieces in ${escapeHtml(activeName || "this collection")} yet.`}</h2>
         <p>We apologize. Please check back later for the next release.</p>
       </div>`;
+}
+
+function renderCollectionFilters() {
+  const container = document.getElementById("collection-filters");
+  container.innerHTML = [
+    { name: "All", slug: "all" },
+    ...collections,
+  ].map((collection) => `<button type="button" data-collection="${escapeHtml(collection.slug)}" class="${collection.slug === activeCollection ? "active" : ""}">${escapeHtml(collection.name)}</button>`).join("");
+  container.querySelectorAll("[data-collection]").forEach((button) => button.addEventListener("click", () => {
+    activeCollection = button.dataset.collection;
+    renderCollectionFilters();
+    renderCollection();
+    bindButtons();
+  }));
 }
 
 function renderDetail(item) {
@@ -117,6 +135,7 @@ function renderDetail(item) {
     ${listBlock(item.item_mode === "regular" ? "Design notes" : "Customization possibilities", item.customization_options)}
   </section>
   <section class="request-explainer">
+    <span class="kicker nova-scotia-note">Designed in Nova Scotia</span>
     <span class="kicker">Why requests?</span>
     <h2>No anonymous checkout. No guessing.</h2>
     <p>Each request is confirmed personally before production, so sizing, color, customization, price, and delivery details are clear before payment.</p>
@@ -135,6 +154,12 @@ function bindButtons() {
 
 function showView(id) {
   const next = document.getElementById(id) ? id : "home";
+  if (next === "collection") {
+    activeCollection = "all";
+    renderCollectionFilters();
+    renderCollection();
+    bindButtons();
+  }
   applyTheme(demoItem);
   views.forEach((view) => view.classList.toggle("active", view.id === next));
   navButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === next));
@@ -153,9 +178,14 @@ function showItem(slug) {
 }
 
 async function loadItems() {
-  const { data, error } = await supabase.from("public_shop_items").select("*").order("created_at", { ascending: false });
-  if (!error) items = normalizeItems(data);
+  const [itemResult, collectionResult] = await Promise.all([
+    supabase.from("public_shop_items").select("*").order("created_at", { ascending: false }),
+    supabase.from("public_shop_collections").select("*").order("sort_order").order("name"),
+  ]);
+  if (!itemResult.error) items = normalizeItems(itemResult.data);
+  if (!collectionResult.error) collections = normalizeCollections(collectionResult.data);
   renderHome();
+  renderCollectionFilters();
   renderCollection();
   bindButtons();
   const hash = location.hash.slice(1);
@@ -166,6 +196,7 @@ navButtons.forEach((button) => button.addEventListener("click", () => showView(b
 document.getElementById("year").textContent = new Date().getFullYear();
 applyTheme(demoItem);
 renderHome();
+renderCollectionFilters();
 renderCollection();
 bindButtons();
 const initialHash = location.hash.slice(1);

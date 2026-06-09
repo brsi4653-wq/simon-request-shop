@@ -1,4 +1,5 @@
 export const ORDER_EMAIL = "simon_j_brookes@icloud.com";
+export const MAX_COLLECTIONS = 6;
 
 export const THEMES = {
   green: {
@@ -95,6 +96,24 @@ export function parseGallery(value = "") {
   return [...new Set(parseLines(value))];
 }
 
+export function normalizeCollection(collection = {}) {
+  return {
+    id: collection.id || "",
+    name: collection.name || "Untitled Collection",
+    slug: collection.slug || createSlug(collection.name || "untitled-collection"),
+    sort_order: Number.isFinite(Number(collection.sort_order)) ? Number(collection.sort_order) : 0,
+    is_visible: collection.is_visible !== false,
+  };
+}
+
+export function normalizeCollections(collections = []) {
+  if (!Array.isArray(collections)) return [];
+  return collections
+    .map(normalizeCollection)
+    .sort((first, second) => first.sort_order - second.sort_order || first.name.localeCompare(second.name))
+    .slice(0, MAX_COLLECTIONS);
+}
+
 export function normalizeItem(item = {}) {
   const itemMode = ITEM_MODES[item.item_mode] ? item.item_mode : "regular";
   const theme = THEMES[item.theme] ? item.theme : "mono";
@@ -118,6 +137,8 @@ export function normalizeItem(item = {}) {
     theme,
     is_featured: Boolean(item.is_featured),
     is_published: Boolean(item.is_published),
+    collection_slugs: parseLines(item.collection_slugs),
+    collection_ids: parseLines(item.collection_ids),
   };
 }
 
@@ -127,6 +148,11 @@ export function normalizeItems(items = []) {
 
 export function getTheme(themeName) {
   return THEMES[themeName] || THEMES.green;
+}
+
+export function filterItemsByCollection(items = [], collectionSlug = "all") {
+  if (collectionSlug === "all") return items;
+  return items.filter((item) => normalizeItem(item).collection_slugs.includes(collectionSlug));
 }
 
 export function buildRequestEmail(rawItem, recipient = ORDER_EMAIL) {

@@ -17,12 +17,25 @@ The working film portfolio is not modified by this project. This shop uses the s
 
 The seeded Studio Edition is a private draft. Publish it from the editor when you want to test the public database connection.
 
+## Adding Collections To An Existing Shop
+
+If the shop was already set up before collections were added:
+
+1. Open the existing Supabase project.
+2. Open **SQL Editor** and create a new query.
+3. Paste the complete contents of `supabase-shop-collections-migration.sql`.
+4. Click **Run** once.
+5. Upload the updated contents of `docs` to GitHub Pages.
+
+The collection migration is additive. It does not update, delete, publish, unpublish, or reassign any existing item. Existing published items remain visible under **All** until collections are assigned in the editor.
+
 ## Security Model
 
 - The site contains a Supabase **publishable** browser key. This key is intentionally safe to expose and cannot be hidden in a plain static GitHub Pages site.
 - The site does **not** contain a database password, Supabase service-role key, Google client secret, private API key, or payment credential.
 - Supabase row-level security only permits the authorized Google account to read drafts or change shop items.
 - Public visitors can only read rows exposed by `public_shop_items`, which contains published items.
+- Public visitors can only read visible collection names and published item memberships.
 - Public visitors cannot upload, edit, feature, publish, or delete items.
 - Request emails are created inside the visitor's browser. Customer information is not collected or stored by the website.
 

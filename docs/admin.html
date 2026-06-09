@@ -7,7 +7,7 @@
     <title>Shop Editor | SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260608-collections" />
   </head>
   <body>
     <header class="admin-header">
@@ -38,6 +38,14 @@
             <button id="new-item" class="icon-button" type="button" title="Create item" aria-label="Create item">+</button>
           </div>
           <div id="item-list" class="item-list"></div>
+          <div class="collection-manager-heading">
+            <div>
+              <span class="eyebrow">Public Filters</span>
+              <h2>Collections</h2>
+            </div>
+            <button id="new-collection" class="icon-button" type="button" title="Create collection" aria-label="Create collection">+</button>
+          </div>
+          <div id="collection-manager" class="collection-manager"></div>
         </aside>
 
         <section class="editor">
@@ -82,6 +90,12 @@
             <label>Customization notes <small>One per line. Use for custom or hybrid items.</small><textarea name="customization_options" rows="5"></textarea></label>
 
             <fieldset>
+              <legend>Collections</legend>
+              <small>An item can appear in more than one collection. It always remains visible under All when published.</small>
+              <div id="item-collection-options" class="item-collection-options"></div>
+            </fieldset>
+
+            <fieldset>
               <legend>Item Theme</legend>
               <div id="theme-options" class="theme-options"></div>
             </fieldset>
@@ -116,6 +130,6 @@
       </section>
     </main>
 
-    <script type="module" src="assets/admin.js"></script>
+    <script type="module" src="assets/admin.js?v=20260608-collections"></script>
   </body>
 </html>

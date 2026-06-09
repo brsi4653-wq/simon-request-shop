@@ -50,6 +50,49 @@ for each row execute function public.set_shop_item_updated_at();
 
 alter table public.shop_items enable row level security;
 
+create table if not exists public.shop_collections (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text not null unique,
+  sort_order integer not null default 0,
+  is_visible boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.shop_item_collections (
+  item_id uuid not null references public.shop_items(id) on delete cascade,
+  collection_id uuid not null references public.shop_collections(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (item_id, collection_id)
+);
+
+create or replace function public.enforce_shop_collection_limit()
+returns trigger
+language plpgsql
+set search_path = public
+as $function$
+begin
+  if (select count(*) from public.shop_collections) >= 6 then
+    raise exception 'A maximum of six shop collections is allowed.';
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists shop_collection_limit on public.shop_collections;
+create trigger shop_collection_limit
+before insert on public.shop_collections
+for each row execute function public.enforce_shop_collection_limit();
+
+drop trigger if exists shop_collections_updated_at on public.shop_collections;
+create trigger shop_collections_updated_at
+before update on public.shop_collections
+for each row execute function public.set_shop_item_updated_at();
+
+alter table public.shop_collections enable row level security;
+alter table public.shop_item_collections enable row level security;
+
 drop policy if exists "shop admin reads items" on public.shop_items;
 create policy "shop admin reads items" on public.shop_items for select to authenticated
 using (public.is_portfolio_admin());
@@ -70,6 +113,51 @@ revoke all on public.shop_items from anon, authenticated;
 grant select, insert, update, delete on public.shop_items to authenticated;
 grant execute on function public.is_portfolio_admin() to authenticated;
 
+drop policy if exists "shop admin reads collections" on public.shop_collections;
+create policy "shop admin reads collections" on public.shop_collections for select to authenticated
+using (public.is_portfolio_admin());
+
+drop policy if exists "shop admin creates collections" on public.shop_collections;
+create policy "shop admin creates collections" on public.shop_collections for insert to authenticated
+with check (public.is_portfolio_admin());
+
+drop policy if exists "shop admin updates collections" on public.shop_collections;
+create policy "shop admin updates collections" on public.shop_collections for update to authenticated
+using (public.is_portfolio_admin()) with check (public.is_portfolio_admin());
+
+drop policy if exists "shop admin deletes collections" on public.shop_collections;
+create policy "shop admin deletes collections" on public.shop_collections for delete to authenticated
+using (public.is_portfolio_admin());
+
+drop policy if exists "shop admin reads item collections" on public.shop_item_collections;
+create policy "shop admin reads item collections" on public.shop_item_collections for select to authenticated
+using (public.is_portfolio_admin());
+
+drop policy if exists "shop admin creates item collections" on public.shop_item_collections;
+create policy "shop admin creates item collections" on public.shop_item_collections for insert to authenticated
+with check (public.is_portfolio_admin());
+
+drop policy if exists "shop admin deletes item collections" on public.shop_item_collections;
+create policy "shop admin deletes item collections" on public.shop_item_collections for delete to authenticated
+using (public.is_portfolio_admin());
+
+revoke all on public.shop_collections from anon, authenticated;
+revoke all on public.shop_item_collections from anon, authenticated;
+grant select, insert, update, delete on public.shop_collections to authenticated;
+grant select, insert, delete on public.shop_item_collections to authenticated;
+
+create or replace view public.public_shop_collections
+with (security_barrier = true)
+as
+select id, name, slug, sort_order
+from public.shop_collections
+where is_visible = true
+order by sort_order, name
+limit 6;
+
+revoke all on public.public_shop_collections from public;
+grant select on public.public_shop_collections to anon, authenticated;
+
 drop view if exists public.public_shop_items;
 create view public.public_shop_items
 with (security_barrier = true)
@@ -77,9 +165,15 @@ as
 select
   id, slug, title, eyebrow, summary, description, main_image_url, gallery_urls,
   sizes, colors, customization_options, production_note, price_note, item_mode,
-  request_subject, request_intro, theme, is_featured, created_at
-from public.shop_items
-where is_published = true;
+  item.request_subject, item.request_intro, item.theme, item.is_featured, item.created_at,
+  coalesce((
+    select jsonb_agg(collection.slug order by collection.sort_order, collection.name)
+    from public.shop_item_collections membership
+    join public.shop_collections collection on collection.id = membership.collection_id
+    where membership.item_id = item.id and collection.is_visible = true
+  ), '[]'::jsonb) as collection_slugs
+from public.shop_items item
+where item.is_published = true;
 
 revoke all on public.public_shop_items from public;
 grant select on public.public_shop_items to anon, authenticated;
@@ -127,6 +221,13 @@ values (
   false,
   false
 )
+on conflict (slug) do nothing;
+
+insert into public.shop_collections (name, slug, sort_order)
+values
+  ('Semi-Customizable', 'semi-customizable', 10),
+  ('Blanks', 'blanks', 20),
+  ('Full Custom', 'full-custom', 30)
 on conflict (slug) do nothing;
 
 select 'shop setup completed successfully' as result;
