@@ -66,16 +66,16 @@ export const THEMES = {
 
 export const ITEM_MODES = {
   regular: {
-    name: "Regular item",
-    label: "Request this item",
+    name: "Ready-made design",
+    label: "Request this design",
   },
   custom: {
-    name: "Custom item",
-    label: "Request a custom edition",
+    name: "Full custom design",
+    label: "Start a custom design",
   },
   hybrid: {
-    name: "Regular with optional customization",
-    label: "Request or customize",
+    name: "Limited placement customization",
+    label: "Customize this garment",
   },
 };
 
@@ -121,7 +121,7 @@ export function normalizeItem(item = {}) {
     id: item.id || "",
     slug: item.slug || createSlug(item.title || "untitled-item"),
     title: item.title || "Untitled Item",
-    eyebrow: item.eyebrow || "Made to request",
+    eyebrow: item.eyebrow || "Custom garment",
     summary: item.summary || "",
     description: item.description || "",
     main_image_url: item.main_image_url || "",
@@ -129,8 +129,8 @@ export function normalizeItem(item = {}) {
     sizes: parseLines(item.sizes),
     colors: parseLines(item.colors),
     customization_options: parseLines(item.customization_options),
-    production_note: item.production_note || "Final availability, production timing, shipping, and pricing are confirmed personally before payment.",
-    price_note: item.price_note || "Final quote confirmed by email",
+    production_note: item.production_note || "Design, garment availability, production timing, shipping, and pricing are confirmed personally before payment.",
+    price_note: item.price_note || "Final design quote confirmed by email",
     item_mode: itemMode,
     request_subject: item.request_subject || "",
     request_intro: item.request_intro || "",
@@ -157,24 +157,19 @@ export function filterItemsByCollection(items = [], collectionSlug = "all") {
 
 export function buildRequestEmail(rawItem, recipient = ORDER_EMAIL) {
   const item = normalizeItem(rawItem);
-  const subjectPrefix = item.item_mode === "custom" ? "Custom request" : "Item request";
+  const subjectPrefix = item.item_mode === "regular" ? "Garment request" : "Custom clothing request";
   const subject = item.request_subject || `${subjectPrefix}: ${item.title}`;
-  const intro = item.request_intro || `Hi Simon,\n\nI'd like to request ${item.title}.`;
+  const intro = item.request_intro || `Hi Simon,\n\nI'd like to create something using the ${item.title}.`;
   const common = [
     intro,
     "",
-    `Item: ${item.title}`,
+    `Garment: ${item.title}`,
     "Preferred size:",
     "Preferred color:",
   ];
 
-  if (item.item_mode === "custom") {
-    common.push("Requested personalization:", "Preferred font or style:");
-  } else if (item.item_mode === "hybrid") {
-    common.push("Optional customization request:");
-  }
-
-  common.push("Shipping location:", "Extra notes:", "", "Please send me the final quote and payment instructions.");
+  common.push("My design idea or artwork:", "Preferred print placement:", "Preferred style or references:");
+  common.push("Shipping location:", "Extra notes:", "", "Please let me know what is possible and send me the final design quote.");
   const body = common.join("\n");
   return {
     recipient,

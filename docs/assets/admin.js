@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, createSlug, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, THEMES } from "./item-model.js?v=20260608-collections";
+import { buildRequestEmail, createSlug, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, THEMES } from "./item-model.js?v=20260609-service";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const form = document.getElementById("item-form");
@@ -99,10 +99,10 @@ function collectItem() {
 function resetForm() {
   form.reset();
   document.getElementById("item-id").value = "";
-  document.getElementById("editor-title").textContent = "New Item";
+  document.getElementById("editor-title").textContent = "New Garment";
   document.getElementById("main-preview").hidden = true;
   form.elements.theme.value = "mono";
-  form.elements.item_mode.value = "regular";
+  form.elements.item_mode.value = "custom";
   renderItemCollectionOptions();
   setMessage();
   renderPreview();
@@ -133,7 +133,7 @@ function fillForm(rawItem) {
 function renderList() {
   itemList.innerHTML = items.length
     ? items.map((item) => `<button class="item-entry" data-id="${item.id}"><strong>${item.title}</strong><small>${item.is_published ? "Published" : "Draft"}${item.is_featured ? " / Featured" : ""} / ${ITEM_MODES[item.item_mode]?.name || "Regular item"}</small></button>`).join("")
-    : "<p>No items yet.</p>";
+    : "<p>No garments yet.</p>";
   document.querySelectorAll(".item-entry").forEach((button) => button.addEventListener("click", () => fillForm(items.find((item) => item.id === button.dataset.id))));
 }
 
@@ -267,10 +267,10 @@ async function saveItem(event) {
       : await supabase.from("shop_items").insert(item).select().single();
     if (result.error) throw result.error;
     await saveItemCollections(result.data.id, collectionIds);
-    setMessage(item.is_published ? "Item saved and published." : "Draft saved privately.");
+    setMessage(item.is_published ? "Garment saved and published." : "Garment draft saved privately.");
     await loadAdminData(result.data.id);
   } catch (error) {
-    setMessage(error.message || "The item could not be saved.", true);
+    setMessage(error.message || "The garment could not be saved.", true);
   }
 }
 

@@ -42,7 +42,7 @@ test("parseGallery accepts newline-separated image URLs and removes duplicates",
   assert.deepEqual(parseGallery("one.jpg\ntwo.jpg\none.jpg"), ["one.jpg", "two.jpg"]);
 });
 
-test("regular request email asks only for standard ordering choices", () => {
+test("every garment request asks for the customer's design idea and placement", () => {
   const email = buildRequestEmail(normalizeItem({
     title: "Green Studio Shirt",
     item_mode: "regular",
@@ -53,26 +53,29 @@ test("regular request email asks only for standard ordering choices", () => {
   assert.match(email.href, /^mailto:orders@example\.com\?/);
   assert.match(email.body, /Preferred size:/);
   assert.match(email.body, /Preferred color:/);
-  assert.doesNotMatch(email.body, /Requested personalization:/);
+  assert.match(email.body, /My design idea or artwork:/);
+  assert.match(email.body, /Preferred print placement:/);
 });
 
-test("custom request email asks for personalization details", () => {
+test("custom request email uses the custom clothing service language", () => {
   const email = buildRequestEmail(normalizeItem({
     title: "Named Print",
     item_mode: "custom",
     customization_options: ["Name on front", "Font choice"],
   }), "orders@example.com");
 
-  assert.match(email.subject, /Custom request/);
-  assert.match(email.body, /Requested personalization:/);
-  assert.match(email.body, /Preferred font or style:/);
+  assert.match(email.subject, /Custom clothing request/);
+  assert.match(email.body, /My design idea or artwork:/);
+  assert.match(email.body, /Preferred style or references:/);
 });
 
-test("hybrid request email makes customization optional", () => {
+test("limited-placement request email still collects the full design brief", () => {
   const email = buildRequestEmail(normalizeItem({
     title: "Studio Shirt",
     item_mode: "hybrid",
   }), "orders@example.com");
 
-  assert.match(email.body, /Optional customization request:/);
+  assert.match(email.body, /My design idea or artwork:/);
+  assert.match(email.body, /Preferred print placement:/);
+  assert.match(email.body, /final design quote/);
 });

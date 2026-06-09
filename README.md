@@ -1,8 +1,8 @@
-# Simon Request Shop
+# SHIPS Custom Clothing Shop
 
-A separate plain-static GitHub Pages storefront for regular, custom, and hybrid made-to-request items.
+A plain-static GitHub Pages storefront for custom clothing design and fulfillment requests.
 
-The working film portfolio is not modified by this project. This shop uses the same Supabase project and Google administrator account, but stores products in its own `shop_items` table and images in its own `shop-media` bucket.
+Customers choose a garment, send artwork, references, text, or an idea, and SHIPS prepares the design before arranging production and shipping. The working film portfolio is not modified by this project.
 
 ## One-Time Setup
 
@@ -15,7 +15,18 @@ The working film portfolio is not modified by this project. This shop uses the s
 7. In Supabase Authentication URL settings, add the new shop's final GitHub Pages address as an allowed redirect URL.
 8. Open `admin.html` on the deployed shop and sign in with the authorized Google account.
 
-The seeded Studio Edition is a private draft. Publish it from the editor when you want to test the public database connection.
+## Reset The Existing Catalogue To The New Business Model
+
+The file `supabase-shop-business-reset.sql` is intentionally destructive. It removes every current shop item and collection, then creates the new image-free garment catalogue.
+
+1. Open the existing Supabase project.
+2. Open **SQL Editor** and create a new query.
+3. Paste the complete contents of `supabase-shop-business-reset.sql`.
+4. Click **Run** once.
+5. Upload the updated contents of `docs` to GitHub Pages.
+6. Open `admin.html`, sign in, and add the garment images.
+
+The public category buttons will be **All**, **Pants**, **T-Shirts**, and **Hoodies**. `All` is automatic. The three named categories remain editable in the private editor, and up to six custom categories can exist.
 
 ## Adding Collections To An Existing Shop
 
@@ -40,13 +51,13 @@ The collection migration is additive. It does not update, delete, publish, unpub
 - Public visitors cannot upload, edit, feature, publish, or delete items.
 - Request emails are created inside the visitor's browser. Customer information is not collected or stored by the website.
 
-## Item Modes
+## Design Service Modes
 
-- **Regular item:** asks for item, size, color, shipping location, and notes.
-- **Custom item:** additionally asks for personalization and preferred font/style.
-- **Hybrid item:** offers optional customization without making it mandatory.
+- **Ready-made design:** starts from an existing finished design.
+- **Full custom design:** develops a customer idea for the selected garment.
+- **Limited placement customization:** develops a customer idea within the garment's supported print areas.
 
-Sizes and colors are displayed as information on the item page. Visitors write their choices in the request email instead of using a checkout form.
+Every request email asks for the garment, size, color, artwork or idea, placement, style references, shipping location, and notes.
 
 ## Files to Publish
 

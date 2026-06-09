@@ -1,24 +1,9 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, filterItemsByCollection, getTheme, ITEM_MODES, normalizeCollections, normalizeItem, normalizeItems } from "./item-model.js?v=20260608-collections";
+import { buildRequestEmail, filterItemsByCollection, getTheme, ITEM_MODES, normalizeCollections, normalizeItem, normalizeItems } from "./item-model.js?v=20260609-service";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const demoItem = normalizeItem({
-  slug: "studio-edition",
-  title: "Studio Edition",
-  eyebrow: "First study / demo piece",
-  summary: "A clean made-to-request piece shown here as the first test of the studio system.",
-  description: "This temporary listing demonstrates how each item can have its own atmosphere, gallery, available options, and personal request process. Replace it with the first real piece when it is ready.",
-  main_image_url: "images/items/demo-item.png",
-  gallery_urls: ["images/items/demo-item.png"],
-  sizes: ["Small", "Medium", "Large", "Additional sizes by request"],
-  colors: ["Fresh green", "Cream", "A different color may be requested"],
-  customization_options: ["Optional name or short phrase", "Font and placement discussed by email"],
-  item_mode: "hybrid",
-  theme: "mono",
-  is_featured: true,
-  is_published: true,
-});
+const demoItem = normalizeItem({ theme: "mono" });
 
 let items = [];
 let collections = [];
@@ -47,38 +32,26 @@ function listBlock(title, values) {
   return `<section class="option-block"><span class="kicker">${escapeHtml(title)}</span><ul>${values.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>`;
 }
 
+function imagePlaceholder(title) {
+  return `<div class="image-placeholder" role="img" aria-label="${escapeHtml(title)} image coming soon">
+    <span class="kicker">Garment preview</span>
+    <strong>Image coming soon</strong>
+  </div>`;
+}
+
 function itemCard(item) {
   const theme = getTheme(item.theme);
   return `<article class="item-card" data-theme="${escapeHtml(item.theme)}" style="--card-accent:${theme.accent};--card-soft:${theme.soft};--card-surface:${theme.surface};--card-ink:${theme.ink};--card-muted:${theme.muted};--card-line:color-mix(in srgb, ${theme.ink} 16%, transparent)">
     <button class="item-image" data-item="${escapeHtml(item.slug)}" aria-label="Open ${escapeHtml(item.title)}">
-      <img src="${escapeHtml(item.main_image_url || "images/items/demo-item.png")}" alt="${escapeHtml(item.title)}" />
+      ${item.main_image_url ? `<img src="${escapeHtml(item.main_image_url)}" alt="${escapeHtml(item.title)}" />` : imagePlaceholder(item.title)}
     </button>
     <div class="item-card-copy">
       <span class="kicker">${escapeHtml(item.eyebrow)}</span>
       <h2>${escapeHtml(item.title)}</h2>
       <p>${escapeHtml(item.summary)}</p>
-      <button class="text-action" data-item="${escapeHtml(item.slug)}">View piece <span>↗</span></button>
+      <button class="text-action" data-item="${escapeHtml(item.slug)}">View garment <span>&nearr;</span></button>
     </div>
   </article>`;
-}
-
-function renderHome() {
-  const featured = items.find((item) => item.is_featured) || items[0];
-  document.getElementById("featured-item").innerHTML = featured ? `<div class="featured-inner">
-    <div class="featured-copy">
-      <span class="kicker">Featured request</span>
-      <h2>${escapeHtml(featured.title)}</h2>
-      <p>${escapeHtml(featured.summary)}</p>
-      <button class="primary-action" data-item="${escapeHtml(featured.slug)}">See the piece</button>
-    </div>
-    <button class="featured-image" data-item="${escapeHtml(featured.slug)}" aria-label="Open ${escapeHtml(featured.title)}">
-      <img src="${escapeHtml(featured.main_image_url || "images/items/demo-item.png")}" alt="${escapeHtml(featured.title)}" />
-    </button>
-  </div>` : `<div class="empty-state">
-    <span class="kicker">The collection is currently empty</span>
-    <h2>No items are available right now.</h2>
-    <p>We apologize. New pieces will appear here when they are ready.</p>
-  </div>`;
 }
 
 function renderCollection() {
@@ -90,8 +63,8 @@ function renderCollection() {
     ? filteredItems.map(itemCard).join("")
     : `<div class="empty-state">
         <span class="kicker">${activeCollection === "all" ? "Nothing currently available" : "This collection is currently empty"}</span>
-        <h2>${activeCollection === "all" ? "There are no items at the moment." : `No pieces in ${escapeHtml(activeName || "this collection")} yet.`}</h2>
-        <p>We apologize. Please check back later for the next release.</p>
+        <h2>${activeCollection === "all" ? "There are no garments at the moment." : `No garments in ${escapeHtml(activeName || "this collection")} yet.`}</h2>
+        <p>We apologize. Please check back later for the next available garment.</p>
       </div>`;
 }
 
@@ -116,7 +89,7 @@ function renderDetail(item) {
   const images = [item.main_image_url, ...item.gallery_urls].filter(Boolean);
   document.getElementById("item-detail").innerHTML = `<section class="detail-hero">
     <div class="detail-gallery">
-      <div class="gallery-main"><img id="gallery-main-image" src="${escapeHtml(images[0] || "images/items/demo-item.png")}" alt="${escapeHtml(item.title)}" /></div>
+      <div class="gallery-main">${images.length ? `<img id="gallery-main-image" src="${escapeHtml(images[0])}" alt="${escapeHtml(item.title)}" />` : imagePlaceholder(item.title)}</div>
       ${images.length > 1 ? `<div class="gallery-strip">${images.map((url, index) => `<button class="${index === 0 ? "active" : ""}" data-gallery-image="${escapeHtml(url)}"><img src="${escapeHtml(url)}" alt="View ${index + 1} of ${escapeHtml(item.title)}" /></button>`).join("")}</div>` : ""}
     </div>
     <div class="detail-copy">
@@ -132,14 +105,14 @@ function renderDetail(item) {
   <section class="options-layout">
     ${listBlock("Available sizes", item.sizes)}
     ${listBlock("Available colors", item.colors)}
-    ${listBlock(item.item_mode === "regular" ? "Design notes" : "Customization possibilities", item.customization_options)}
+    ${listBlock("Supported design options", item.customization_options)}
   </section>
   <section class="request-explainer">
     <span class="kicker nova-scotia-note">Designed in Nova Scotia</span>
-    <span class="kicker">Why requests?</span>
-    <h2>No anonymous checkout. No guessing.</h2>
-    <p>Each request is confirmed personally before production, so sizing, color, customization, price, and delivery details are clear before payment.</p>
-    <a class="text-action" href="${escapeHtml(email.href)}">Open your request email <span>↗</span></a>
+    <span class="kicker">Your design request</span>
+    <h2>Start with an idea, not a finished file.</h2>
+    <p>Send artwork, references, words, or a rough concept. SHIPS confirms what is possible, prepares the design, and reviews the garment, price, production, and delivery details with you before payment.</p>
+    <a class="text-action" href="${escapeHtml(email.href)}">Start your design request <span>&nearr;</span></a>
   </section>`;
 
   document.querySelectorAll("[data-gallery-image]").forEach((button) => button.addEventListener("click", () => {
@@ -184,7 +157,6 @@ async function loadItems() {
   ]);
   if (!itemResult.error) items = normalizeItems(itemResult.data);
   if (!collectionResult.error) collections = normalizeCollections(collectionResult.data);
-  renderHome();
   renderCollectionFilters();
   renderCollection();
   bindButtons();
@@ -195,7 +167,6 @@ async function loadItems() {
 navButtons.forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 document.getElementById("year").textContent = new Date().getFullYear();
 applyTheme(demoItem);
-renderHome();
 renderCollectionFilters();
 renderCollection();
 bindButtons();
