@@ -7,20 +7,21 @@ import {
   normalizeItems,
   parseLines,
   parseGallery,
+  toPublicGarmentCopy,
 } from "../docs/assets/item-model.js";
 
 test("normalizeItem supplies safe defaults and preserves the supported item mode", () => {
   const item = normalizeItem({ title: "Studio Shirt", item_mode: "hybrid" });
   assert.equal(item.title, "Studio Shirt");
   assert.equal(item.item_mode, "hybrid");
-  assert.equal(item.theme, "mono");
+  assert.equal(item.theme, "global");
   assert.deepEqual(item.gallery_urls, []);
 });
 
 test("normalizeItem rejects unsupported item modes and themes", () => {
   const item = normalizeItem({ item_mode: "instant-checkout", theme: "unknown" });
   assert.equal(item.item_mode, "regular");
-  assert.equal(item.theme, "mono");
+  assert.equal(item.theme, "global");
 });
 
 test("normalizeItems preserves an intentionally empty collection", () => {
@@ -42,7 +43,7 @@ test("parseGallery accepts newline-separated image URLs and removes duplicates",
   assert.deepEqual(parseGallery("one.jpg\ntwo.jpg\none.jpg"), ["one.jpg", "two.jpg"]);
 });
 
-test("every garment request asks for the customer's design idea and placement", () => {
+test("every garment request asks for ordinary ordering details", () => {
   const email = buildRequestEmail(normalizeItem({
     title: "Green Studio Shirt",
     item_mode: "regular",
@@ -53,29 +54,44 @@ test("every garment request asks for the customer's design idea and placement", 
   assert.match(email.href, /^mailto:orders@example\.com\?/);
   assert.match(email.body, /Preferred size:/);
   assert.match(email.body, /Preferred color:/);
-  assert.match(email.body, /My design idea or artwork:/);
-  assert.match(email.body, /Preferred print placement:/);
+  assert.match(email.body, /Shipping location:/);
+  assert.match(email.body, /Questions or notes:/);
+  assert.doesNotMatch(email.body, /My design idea or artwork|Preferred print placement|Preferred style or references/);
 });
 
-test("custom request email uses the custom clothing service language", () => {
+test("all modes use the same garment-first request language", () => {
   const email = buildRequestEmail(normalizeItem({
     title: "Named Print",
     item_mode: "custom",
     customization_options: ["Name on front", "Font choice"],
   }), "orders@example.com");
 
-  assert.match(email.subject, /Custom clothing request/);
-  assert.match(email.body, /My design idea or artwork:/);
-  assert.match(email.body, /Preferred style or references:/);
+  assert.match(email.subject, /Garment request/);
+  assert.match(email.body, /Optional custom print request \(if available\):/);
+  assert.match(email.body, /current availability, final price, and ordering details/);
 });
 
-test("limited-placement request email still collects the full design brief", () => {
+test("selected garments keep custom requests optional and secondary", () => {
   const email = buildRequestEmail(normalizeItem({
     title: "Studio Shirt",
     item_mode: "hybrid",
   }), "orders@example.com");
 
-  assert.match(email.body, /My design idea or artwork:/);
-  assert.match(email.body, /Preferred print placement:/);
-  assert.match(email.body, /final design quote/);
+  assert.match(email.body, /Optional custom print request \(if available\):/);
+  assert.doesNotMatch(email.body, /My design idea or artwork|Preferred print placement/);
+  assert.match(email.body, /current availability, final price, and ordering details/);
+});
+
+test("older service-style database copy is presented as brand catalogue copy", () => {
+  const publicCopy = toPublicGarmentCopy(normalizeItem({
+    title: "Sunfade Hoodie",
+    eyebrow: "Full custom / Hoodie",
+    summary: "A hoodie available for custom SHIPS design requests.",
+    description: "Send SHIPS your artwork and we will prepare the design.",
+  }));
+
+  assert.equal(publicCopy.eyebrow, "Hoodie");
+  assert.doesNotMatch(publicCopy.summary, /custom|design request/i);
+  assert.doesNotMatch(publicCopy.description, /send SHIPS|artwork|prepare the design/i);
+  assert.match(publicCopy.description, /current SHIPS collection/i);
 });

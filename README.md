@@ -1,8 +1,8 @@
-# SHIPS Custom Clothing Shop
+# SHIPS Clothing Brand
 
-A plain-static GitHub Pages storefront for custom clothing design and fulfillment requests.
+A plain-static GitHub Pages site for the independent SHIPS clothing brand.
 
-Customers choose a garment, send artwork, references, text, or an idea, and SHIPS prepares the design before arranging production and shipping. The working film portfolio is not modified by this project.
+SHIPS is focused on selected garments, seasonal collections, and small-batch releases designed in Nova Scotia. Custom print requests remain an optional secondary feature for select garments. The working film portfolio is not modified by this project.
 
 ## One-Time Setup
 
@@ -15,13 +15,13 @@ Customers choose a garment, send artwork, references, text, or an idea, and SHIP
 7. In Supabase Authentication URL settings, add the new shop's final GitHub Pages address as an allowed redirect URL.
 8. Open `admin.html` on the deployed shop and sign in with the authorized Google account.
 
-## Reset The Existing Catalogue To The New Business Model
+## Completely Renew The Existing Shop
 
-The file `supabase-shop-business-reset.sql` is intentionally destructive. It removes every current shop item and collection, then creates the new image-free garment catalogue.
+Use only `supabase-shop-full-renew.sql` for the complete renewal. It is intentionally destructive: it removes and rebuilds the shop catalogue tables, permissions, public views, categories, media-bucket rules, and image-free garment catalogue.
 
 1. Open the existing Supabase project.
 2. Open **SQL Editor** and create a new query.
-3. Paste the complete contents of `supabase-shop-business-reset.sql`.
+3. Paste the complete contents of `supabase-shop-full-renew.sql`.
 4. Click **Run** once.
 5. Upload the updated contents of `docs` to GitHub Pages.
 6. Open `admin.html`, sign in, and add the garment images.
@@ -41,6 +41,12 @@ If the shop was already set up before collections were added:
 
 The collection migration is additive. It does not update, delete, publish, unpublish, or reassign any existing item. Existing published items remain visible under **All** until collections are assigned in the editor.
 
+## Adding Theme Controls To An Existing Shop
+
+Run `supabase-shop-themes.sql` once in the Supabase SQL Editor. It preserves every existing garment and collection while adding the global website theme setting and the product-level **Use Global Theme** option.
+
+After running it, upload the updated `docs` folder. The private editor can switch the whole site between Core, Sunfade, Clear Blue, Soft Orange, Warm Yellow, Fresh Green, and Studio Red. Individual products can inherit the global theme or use their own selection.
+
 ## Security Model
 
 - The site contains a Supabase **publishable** browser key. This key is intentionally safe to expose and cannot be hidden in a plain static GitHub Pages site.
@@ -51,13 +57,12 @@ The collection migration is additive. It does not update, delete, publish, unpub
 - Public visitors cannot upload, edit, feature, publish, or delete items.
 - Request emails are created inside the visitor's browser. Customer information is not collected or stored by the website.
 
-## Design Service Modes
+## Listing Modes
 
-- **Ready-made design:** starts from an existing finished design.
-- **Full custom design:** develops a customer idea for the selected garment.
-- **Limited placement customization:** develops a customer idea within the garment's supported print areas.
+- **Collection garment:** a standard piece in the current SHIPS catalogue.
+- **Selected garment:** a garment that may have additional details or limited optional requests.
 
-Every request email asks for the garment, size, color, artwork or idea, placement, style references, shipping location, and notes.
+Every request email asks for the garment, size, color, shipping location, and notes. It includes one optional line for a custom print request when available.
 
 ## Files to Publish
 

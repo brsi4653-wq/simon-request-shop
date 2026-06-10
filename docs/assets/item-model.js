@@ -1,7 +1,28 @@
 export const ORDER_EMAIL = "simon_j_brookes@icloud.com";
 export const MAX_COLLECTIONS = 6;
+export const DEFAULT_GLOBAL_THEME = "core";
 
 export const THEMES = {
+  core: {
+    name: "Core / Monochrome",
+    logo: "images/logos/ships-main-white-display.png",
+    background: "#101010",
+    surface: "#181818",
+    soft: "#282621",
+    ink: "#f7f3e9",
+    muted: "#bbb4a8",
+    accent: "#f3e5ce",
+  },
+  sunfade: {
+    name: "Sunfade / Pink White",
+    logo: "images/logos/ships-main-black-display.png",
+    background: "#fff7f8",
+    surface: "#ffffff",
+    soft: "#f7dfe5",
+    ink: "#321e25",
+    muted: "#765b65",
+    accent: "#ee9caf",
+  },
   green: {
     name: "Fresh Green",
     logo: "images/logos/ships-main-black-display.png",
@@ -66,16 +87,16 @@ export const THEMES = {
 
 export const ITEM_MODES = {
   regular: {
-    name: "Ready-made design",
-    label: "Request this design",
+    name: "Collection garment",
+    label: "Request garment",
   },
   custom: {
-    name: "Full custom design",
-    label: "Start a custom design",
+    name: "Selected garment",
+    label: "Request garment",
   },
   hybrid: {
-    name: "Limited placement customization",
-    label: "Customize this garment",
+    name: "Selected garment",
+    label: "Request garment",
   },
 };
 
@@ -116,12 +137,12 @@ export function normalizeCollections(collections = []) {
 
 export function normalizeItem(item = {}) {
   const itemMode = ITEM_MODES[item.item_mode] ? item.item_mode : "regular";
-  const theme = THEMES[item.theme] ? item.theme : "mono";
+  const theme = item.theme === "global" || THEMES[item.theme] ? item.theme : "global";
   return {
     id: item.id || "",
     slug: item.slug || createSlug(item.title || "untitled-item"),
     title: item.title || "Untitled Item",
-    eyebrow: item.eyebrow || "Custom garment",
+    eyebrow: item.eyebrow || "Selected garment",
     summary: item.summary || "",
     description: item.description || "",
     main_image_url: item.main_image_url || "",
@@ -129,8 +150,8 @@ export function normalizeItem(item = {}) {
     sizes: parseLines(item.sizes),
     colors: parseLines(item.colors),
     customization_options: parseLines(item.customization_options),
-    production_note: item.production_note || "Design, garment availability, production timing, shipping, and pricing are confirmed personally before payment.",
-    price_note: item.price_note || "Final design quote confirmed by email",
+    production_note: item.production_note || "Produced individually based on garment availability. Final availability, pricing, and delivery are confirmed before payment.",
+    price_note: item.price_note || "Final price confirmed by email",
     item_mode: itemMode,
     request_subject: item.request_subject || "",
     request_intro: item.request_intro || "",
@@ -146,8 +167,30 @@ export function normalizeItems(items = []) {
   return Array.isArray(items) ? items.map(normalizeItem) : [];
 }
 
+const SERVICE_COPY_PATTERN = /custom|artwork|design request|send ships|rough idea|print placement|prepare(?:s|d)? the design|personal design|ready to become/i;
+
+export function toPublicGarmentCopy(rawItem = {}) {
+  const item = normalizeItem(rawItem);
+  const eyebrow = item.eyebrow
+    .replace(/^(?:full custom|limited placement|regular(?: with optional customization)?|made to request)\s*\/\s*/i, "")
+    .trim() || "Selected garment";
+  const summary = SERVICE_COPY_PATTERN.test(item.summary)
+    ? `A selected ${eyebrow.toLowerCase()} from the current SHIPS collection.`
+    : item.summary;
+  const description = SERVICE_COPY_PATTERN.test(item.description)
+    ? "This garment is part of the current SHIPS collection and is produced individually based on garment availability."
+    : item.description;
+  return { ...item, eyebrow, summary, description };
+}
+
 export function getTheme(themeName) {
-  return THEMES[themeName] || THEMES.green;
+  return THEMES[themeName] || THEMES[DEFAULT_GLOBAL_THEME];
+}
+
+export function resolveProductTheme(productTheme, globalTheme = DEFAULT_GLOBAL_THEME) {
+  return productTheme && productTheme !== "global" && THEMES[productTheme]
+    ? productTheme
+    : (THEMES[globalTheme] ? globalTheme : DEFAULT_GLOBAL_THEME);
 }
 
 export function filterItemsByCollection(items = [], collectionSlug = "all") {
@@ -157,9 +200,8 @@ export function filterItemsByCollection(items = [], collectionSlug = "all") {
 
 export function buildRequestEmail(rawItem, recipient = ORDER_EMAIL) {
   const item = normalizeItem(rawItem);
-  const subjectPrefix = item.item_mode === "regular" ? "Garment request" : "Custom clothing request";
-  const subject = item.request_subject || `${subjectPrefix}: ${item.title}`;
-  const intro = item.request_intro || `Hi Simon,\n\nI'd like to create something using the ${item.title}.`;
+  const subject = item.request_subject || `Garment request: ${item.title}`;
+  const intro = item.request_intro || `Hi Simon,\n\nI'd like to inquire about the ${item.title}.`;
   const common = [
     intro,
     "",
@@ -168,8 +210,8 @@ export function buildRequestEmail(rawItem, recipient = ORDER_EMAIL) {
     "Preferred color:",
   ];
 
-  common.push("My design idea or artwork:", "Preferred print placement:", "Preferred style or references:");
-  common.push("Shipping location:", "Extra notes:", "", "Please let me know what is possible and send me the final design quote.");
+  common.push("Shipping location:", "Optional custom print request (if available):", "Questions or notes:");
+  common.push("", "Please let me know the current availability, final price, and ordering details.");
   const body = common.join("\n");
   return {
     recipient,

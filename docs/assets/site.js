@@ -1,13 +1,13 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, filterItemsByCollection, getTheme, ITEM_MODES, normalizeCollections, normalizeItem, normalizeItems } from "./item-model.js?v=20260609-service";
+import { buildRequestEmail, DEFAULT_GLOBAL_THEME, filterItemsByCollection, getTheme, ITEM_MODES, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260610-themes";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const demoItem = normalizeItem({ theme: "mono" });
 
 let items = [];
 let collections = [];
 let activeCollection = "all";
+let globalTheme = DEFAULT_GLOBAL_THEME;
 const views = [...document.querySelectorAll(".view")];
 const navButtons = [...document.querySelectorAll("[data-view]")];
 const brandLogo = document.getElementById("brand-logo");
@@ -16,8 +16,8 @@ function escapeHtml(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
-function applyTheme(item = demoItem) {
-  const theme = getTheme(item.theme);
+function applyTheme(themeName = globalTheme) {
+  const theme = getTheme(themeName);
   document.documentElement.style.setProperty("--page-bg", theme.background);
   document.documentElement.style.setProperty("--surface", theme.surface);
   document.documentElement.style.setProperty("--soft", theme.soft);
@@ -40,8 +40,8 @@ function imagePlaceholder(title) {
 }
 
 function itemCard(item) {
-  const theme = getTheme(item.theme);
-  return `<article class="item-card" data-theme="${escapeHtml(item.theme)}" style="--card-accent:${theme.accent};--card-soft:${theme.soft};--card-surface:${theme.surface};--card-ink:${theme.ink};--card-muted:${theme.muted};--card-line:color-mix(in srgb, ${theme.ink} 16%, transparent)">
+  item = toPublicGarmentCopy(item);
+  return `<article class="item-card">
     <button class="item-image" data-item="${escapeHtml(item.slug)}" aria-label="Open ${escapeHtml(item.title)}">
       ${item.main_image_url ? `<img src="${escapeHtml(item.main_image_url)}" alt="${escapeHtml(item.title)}" />` : imagePlaceholder(item.title)}
     </button>
@@ -83,7 +83,8 @@ function renderCollectionFilters() {
 }
 
 function renderDetail(item) {
-  applyTheme(item);
+  item = toPublicGarmentCopy(item);
+  applyTheme(resolveProductTheme(item.theme, globalTheme));
   const mode = ITEM_MODES[item.item_mode];
   const email = buildRequestEmail(item, ORDER_EMAIL);
   const images = [item.main_image_url, ...item.gallery_urls].filter(Boolean);
@@ -105,14 +106,14 @@ function renderDetail(item) {
   <section class="options-layout">
     ${listBlock("Available sizes", item.sizes)}
     ${listBlock("Available colors", item.colors)}
-    ${listBlock("Supported design options", item.customization_options)}
+    ${listBlock("Garment details", item.customization_options)}
   </section>
   <section class="request-explainer">
     <span class="kicker nova-scotia-note">Designed in Nova Scotia</span>
-    <span class="kicker">Your design request</span>
-    <h2>Start with an idea, not a finished file.</h2>
-    <p>Send artwork, references, words, or a rough concept. SHIPS confirms what is possible, prepares the design, and reviews the garment, price, production, and delivery details with you before payment.</p>
-    <a class="text-action" href="${escapeHtml(email.href)}">Start your design request <span>&nearr;</span></a>
+    <span class="kicker">Selected releases</span>
+    <h2>Produced individually.</h2>
+    <p>SHIPS releases selected garments and seasonal collections in small quantities. Availability, final pricing, and delivery details are confirmed personally. Custom print requests may be available for select garments.</p>
+    <a class="text-action" href="${escapeHtml(email.href)}">Inquire about this garment <span>&nearr;</span></a>
   </section>`;
 
   document.querySelectorAll("[data-gallery-image]").forEach((button) => button.addEventListener("click", () => {
@@ -133,7 +134,7 @@ function showView(id) {
     renderCollection();
     bindButtons();
   }
-  applyTheme(demoItem);
+  applyTheme(globalTheme);
   views.forEach((view) => view.classList.toggle("active", view.id === next));
   navButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === next));
   history.replaceState(null, "", `#${next}`);
@@ -151,12 +152,15 @@ function showItem(slug) {
 }
 
 async function loadItems() {
-  const [itemResult, collectionResult] = await Promise.all([
+  const [itemResult, collectionResult, settingResult] = await Promise.all([
     supabase.from("public_shop_items").select("*").order("created_at", { ascending: false }),
     supabase.from("public_shop_collections").select("*").order("sort_order").order("name"),
+    supabase.from("public_shop_settings").select("global_theme").eq("id", "global").maybeSingle(),
   ]);
   if (!itemResult.error) items = normalizeItems(itemResult.data);
   if (!collectionResult.error) collections = normalizeCollections(collectionResult.data);
+  if (!settingResult.error && getTheme(settingResult.data?.global_theme)) globalTheme = settingResult.data?.global_theme || DEFAULT_GLOBAL_THEME;
+  applyTheme(globalTheme);
   renderCollectionFilters();
   renderCollection();
   bindButtons();
@@ -166,7 +170,7 @@ async function loadItems() {
 
 navButtons.forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 document.getElementById("year").textContent = new Date().getFullYear();
-applyTheme(demoItem);
+applyTheme(globalTheme);
 renderCollectionFilters();
 renderCollection();
 bindButtons();

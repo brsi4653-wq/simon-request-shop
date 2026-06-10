@@ -7,7 +7,7 @@
     <title>Shop Editor | SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css?v=20260608-collections2" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260610-themes" />
   </head>
   <body>
     <header class="admin-header">
@@ -23,13 +23,20 @@
       <section id="login-panel" class="login-panel">
         <span class="eyebrow">Private Administration</span>
         <h1>Shop Editor</h1>
-        <p>Sign in with the authorized Google account to manage garments and custom design requests.</p>
+        <p>Sign in with the authorized Google account to manage garments, collections, and releases.</p>
         <button id="google-login" class="primary-button">Continue With Google</button>
         <p id="login-message" class="message"></p>
       </section>
 
       <section id="admin-app" hidden>
         <aside class="item-sidebar">
+          <div class="global-theme-manager">
+            <span class="eyebrow">Website Appearance</span>
+            <h2>Global Website Theme</h2>
+            <p>Controls the homepage, collection, navigation, cards, and footer.</p>
+            <div id="global-theme-options" class="global-theme-options"></div>
+            <button id="save-global-theme" class="primary-button" type="button">Save Global Theme</button>
+          </div>
           <div class="collection-manager-heading">
             <div>
               <span class="eyebrow">Public Filters</span>
@@ -74,8 +81,8 @@
             <div class="form-grid">
               <label>Garment name<input name="title" required /></label>
               <label>URL name<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></label>
-              <label>Garment category<input name="eyebrow" placeholder="T-Shirt / Full custom" /></label>
-              <label>Design service<select name="item_mode"><option value="custom">Full custom design</option><option value="hybrid">Limited placement customization</option><option value="regular">Ready-made design</option></select></label>
+              <label>Garment type<input name="eyebrow" placeholder="T-Shirt / Hoodie / Polo" /></label>
+              <label>Listing type<select name="item_mode"><option value="regular">Collection garment</option><option value="hybrid">Selected garment</option><option value="custom">Selected garment</option></select></label>
             </div>
 
             <label>Short summary<textarea name="summary" rows="3"></textarea></label>
@@ -87,7 +94,7 @@
 
             <label>Available sizes <small>One per line. Shown as information, not dropdowns.</small><textarea name="sizes" rows="5"></textarea></label>
             <label>Available colors <small>One per line. Shown as information, not dropdowns.</small><textarea name="colors" rows="5"></textarea></label>
-            <label>Supported design options <small>One per line. Explain what can be printed or customized on this garment.</small><textarea name="customization_options" rows="5"></textarea></label>
+            <label>Garment details <small>One per line. Add fit, material, finish, or other useful information.</small><textarea name="customization_options" rows="5"></textarea></label>
 
             <fieldset>
               <legend>Collections</legend>
@@ -97,6 +104,7 @@
 
             <fieldset>
               <legend>Garment Page Theme</legend>
+              <small>Use the global website theme or give this product page its own atmosphere.</small>
               <div id="theme-options" class="theme-options"></div>
             </fieldset>
 
@@ -124,12 +132,12 @@
         </section>
 
         <aside class="preview-panel">
-          <span class="eyebrow">Design Request Preview</span>
+          <span class="eyebrow">Garment Request Preview</span>
           <div id="editor-preview"></div>
         </aside>
       </section>
     </main>
 
-    <script type="module" src="assets/admin.js?v=20260609-service"></script>
+    <script type="module" src="assets/admin.js?v=20260610-themes"></script>
   </body>
 </html>

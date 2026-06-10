@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, createSlug, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, THEMES } from "./item-model.js?v=20260609-service";
+import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260610-themes";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const form = document.getElementById("item-form");
@@ -9,6 +9,7 @@ const itemList = document.getElementById("item-list");
 let items = [];
 let collections = [];
 let savedAdminUser = null;
+let globalTheme = DEFAULT_GLOBAL_THEME;
 
 function isAdmin(user) {
   return user?.email?.toLowerCase() === ADMIN_EMAIL;
@@ -32,8 +33,12 @@ function escapeHtml(value = "") {
 }
 
 function renderControls() {
-  document.getElementById("theme-options").innerHTML = Object.entries(THEMES)
-    .map(([key, theme]) => `<label class="theme-choice"><input type="radio" name="theme" value="${key}" ${key === "mono" ? "checked" : ""} /><span class="theme-swatch" style="background:${theme.accent}"></span>${theme.name}</label>`)
+  document.getElementById("theme-options").innerHTML = [
+    `<label class="theme-choice"><input type="radio" name="theme" value="global" checked /><span class="theme-swatch" style="background:linear-gradient(135deg,#101010 50%,#f7f3e9 50%)"></span>Use Global Theme</label>`,
+    ...Object.entries(THEMES).map(([key, theme]) => `<label class="theme-choice"><input type="radio" name="theme" value="${key}" /><span class="theme-swatch" style="background:${theme.accent}"></span>${theme.name}</label>`),
+  ].join("");
+  document.getElementById("global-theme-options").innerHTML = Object.entries(THEMES)
+    .map(([key, theme]) => `<label class="theme-choice"><input type="radio" name="global_theme" value="${key}" ${key === globalTheme ? "checked" : ""} /><span class="theme-swatch" style="background:${theme.accent}"></span>${theme.name}</label>`)
     .join("");
 }
 
@@ -77,7 +82,7 @@ function collectItem() {
   return {
     slug: createSlug(formValue("slug") || formValue("title")),
     title: formValue("title") || "Untitled Item",
-    eyebrow: formValue("eyebrow") || "Made to request",
+    eyebrow: formValue("eyebrow") || "Selected garment",
     summary: formValue("summary"),
     description: formValue("description"),
     main_image_url: formValue("main_image_url"),
@@ -101,8 +106,8 @@ function resetForm() {
   document.getElementById("item-id").value = "";
   document.getElementById("editor-title").textContent = "New Garment";
   document.getElementById("main-preview").hidden = true;
-  form.elements.theme.value = "mono";
-  form.elements.item_mode.value = "custom";
+  form.elements.theme.value = "global";
+  form.elements.item_mode.value = "regular";
   renderItemCollectionOptions();
   setMessage();
   renderPreview();
@@ -139,7 +144,7 @@ function renderList() {
 
 function renderPreview() {
   const item = normalizeItem(collectItem());
-  const theme = getTheme(item.theme);
+  const theme = getTheme(resolveProductTheme(item.theme, globalTheme));
   const email = buildRequestEmail(item, ORDER_EMAIL);
   document.getElementById("editor-preview").innerHTML = `${item.main_image_url ? `<img src="${item.main_image_url}" alt="" />` : "<p>No image yet.</p>"}
     <h3>${item.title}</h3>
@@ -149,16 +154,19 @@ function renderPreview() {
 }
 
 async function loadAdminData(preferredItemId = "") {
-  const [collectionResult, itemResult, membershipResult] = await Promise.all([
+  const [collectionResult, itemResult, membershipResult, settingResult] = await Promise.all([
     supabase.from("shop_collections").select("*").order("sort_order").order("name"),
     supabase.from("shop_items").select("*").order("updated_at", { ascending: false }),
     supabase.from("shop_item_collections").select("item_id, collection_id"),
+    supabase.from("shop_settings").select("global_theme").eq("id", "global").maybeSingle(),
   ]);
   if (collectionResult.error || membershipResult.error) {
     return setMessage("Collections are not ready yet. Run supabase-shop-collections-step-1.sql, then supabase-shop-collections-step-2.sql in Supabase.", true);
   }
   if (itemResult.error) return setMessage("The shop database is not ready yet. Run supabase-shop-setup.sql in Supabase.", true);
   collections = normalizeCollections(collectionResult.data || []);
+  if (!settingResult.error && THEMES[settingResult.data?.global_theme]) globalTheme = settingResult.data.global_theme;
+  renderControls();
   const memberships = membershipResult.data || [];
   items = (itemResult.data || []).map((item) => normalizeItem({
     ...item,
@@ -168,6 +176,14 @@ async function loadAdminData(preferredItemId = "") {
   renderList();
   if (items.length) fillForm(items.find((item) => item.id === preferredItemId) || items[0]);
   else resetForm();
+}
+
+async function saveGlobalTheme() {
+  const selected = document.querySelector('input[name="global_theme"]:checked')?.value || DEFAULT_GLOBAL_THEME;
+  const { error } = await supabase.from("shop_settings").upsert({ id: "global", global_theme: selected });
+  if (error) return setMessage(error.message, true);
+  globalTheme = selected;
+  setMessage(`Global website theme changed to ${THEMES[selected].name}.`);
 }
 
 async function createCollection() {
@@ -333,6 +349,7 @@ form.addEventListener("input", () => {
 });
 document.getElementById("new-item").addEventListener("click", resetForm);
 document.getElementById("new-collection").addEventListener("click", createCollection);
+document.getElementById("save-global-theme").addEventListener("click", saveGlobalTheme);
 document.getElementById("delete-item").addEventListener("click", deleteItem);
 document.getElementById("duplicate-item").addEventListener("click", duplicateItem);
 document.getElementById("publish-item").addEventListener("click", () => {

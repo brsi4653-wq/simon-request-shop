@@ -25,7 +25,7 @@ create table if not exists public.shop_items (
   item_mode text not null default 'regular' check (item_mode in ('regular', 'custom', 'hybrid')),
   request_subject text not null default '',
   request_intro text not null default '',
-  theme text not null default 'mono' check (theme in ('green', 'orange', 'blue', 'red', 'yellow', 'mono')),
+  theme text not null default 'global' check (theme in ('global', 'core', 'sunfade', 'green', 'orange', 'blue', 'red', 'yellow', 'mono')),
   is_published boolean not null default false,
   is_featured boolean not null default false,
   created_at timestamptz not null default now(),
@@ -67,6 +67,17 @@ create table if not exists public.shop_item_collections (
   primary key (item_id, collection_id)
 );
 
+create table if not exists public.shop_settings (
+  id text primary key,
+  global_theme text not null default 'core'
+    check (global_theme in ('core', 'sunfade', 'green', 'orange', 'blue', 'red', 'yellow', 'mono')),
+  updated_at timestamptz not null default now()
+);
+
+insert into public.shop_settings (id, global_theme)
+values ('global', 'core')
+on conflict (id) do nothing;
+
 create or replace function public.enforce_shop_collection_limit()
 returns trigger
 language plpgsql
@@ -92,6 +103,7 @@ for each row execute function public.set_shop_item_updated_at();
 
 alter table public.shop_collections enable row level security;
 alter table public.shop_item_collections enable row level security;
+alter table public.shop_settings enable row level security;
 
 drop policy if exists "shop admin reads items" on public.shop_items;
 create policy "shop admin reads items" on public.shop_items for select to authenticated
@@ -146,6 +158,21 @@ revoke all on public.shop_item_collections from anon, authenticated;
 grant select, insert, update, delete on public.shop_collections to authenticated;
 grant select, insert, delete on public.shop_item_collections to authenticated;
 
+drop policy if exists "shop admin reads settings" on public.shop_settings;
+create policy "shop admin reads settings" on public.shop_settings for select to authenticated
+using (public.is_portfolio_admin());
+
+drop policy if exists "shop admin creates settings" on public.shop_settings;
+create policy "shop admin creates settings" on public.shop_settings for insert to authenticated
+with check (public.is_portfolio_admin());
+
+drop policy if exists "shop admin updates settings" on public.shop_settings;
+create policy "shop admin updates settings" on public.shop_settings for update to authenticated
+using (public.is_portfolio_admin()) with check (public.is_portfolio_admin());
+
+revoke all on public.shop_settings from anon, authenticated;
+grant select, insert, update on public.shop_settings to authenticated;
+
 create or replace view public.public_shop_collections
 with (security_barrier = true)
 as
@@ -157,6 +184,16 @@ limit 6;
 
 revoke all on public.public_shop_collections from public;
 grant select on public.public_shop_collections to anon, authenticated;
+
+create or replace view public.public_shop_settings
+with (security_barrier = true)
+as
+select id, global_theme
+from public.shop_settings
+where id = 'global';
+
+revoke all on public.public_shop_settings from public;
+grant select on public.public_shop_settings to anon, authenticated;
 
 drop view if exists public.public_shop_items;
 create view public.public_shop_items

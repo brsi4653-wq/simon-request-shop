@@ -1,24 +1,40 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { THEMES } from "../docs/assets/item-model.js";
+import { DEFAULT_GLOBAL_THEME, resolveProductTheme, THEMES } from "../docs/assets/item-model.js";
 
 const siteJs = await readFile(new URL("../docs/assets/site.js", import.meta.url), "utf8");
 const siteCss = await readFile(new URL("../docs/assets/site.css", import.meta.url), "utf8");
 const indexHtml = await readFile(new URL("../docs/index.html", import.meta.url), "utf8");
+const adminHtml = await readFile(new URL("../docs/admin.html", import.meta.url), "utf8");
+const adminJs = await readFile(new URL("../docs/assets/admin.js", import.meta.url), "utf8");
+const themeSql = await readFile(new URL("../supabase-shop-themes.sql", import.meta.url), "utf8");
+const setupSql = await readFile(new URL("../supabase-shop-setup.sql", import.meta.url), "utf8");
 
-test("collection cards receive the complete selected theme palette", () => {
-  assert.match(siteJs, /--card-ink:/);
-  assert.match(siteJs, /--card-muted:/);
-  assert.match(siteJs, /--card-surface:/);
-  assert.match(siteJs, /--card-line:/);
+test("theme catalogue includes the requested reusable presets", () => {
+  assert.equal(DEFAULT_GLOBAL_THEME, "core");
+  assert.equal(THEMES.core.name, "Core / Monochrome");
+  assert.equal(THEMES.sunfade.name, "Sunfade / Pink White");
+  for (const key of ["blue", "orange", "yellow", "green", "red"]) assert.ok(THEMES[key]);
 });
 
-test("collection card text uses its own theme colors", () => {
-  assert.match(siteCss, /\.item-card\s*\{[^}]*color:\s*var\(--card-ink(?:,[^)]+)?\)/s);
-  assert.match(siteCss, /\.item-card p\s*\{[^}]*color:\s*var\(--card-muted(?:,[^)]+)?\)/s);
-  assert.match(siteCss, /\.item-card \.kicker\s*\{\s*color:\s*var\(--card-muted(?:,[^)]+)?\)/);
-  assert.match(siteCss, /\.item-card \.text-action\s*\{[^}]*color:\s*var\(--card-ink(?:,[^)]+)?\)/s);
+test("product themes inherit global unless explicitly selected", () => {
+  assert.equal(resolveProductTheme("global", "sunfade"), "sunfade");
+  assert.equal(resolveProductTheme("", "blue"), "blue");
+  assert.equal(resolveProductTheme("red", "blue"), "red");
+});
+
+test("collection cards use the global palette instead of product themes", () => {
+  assert.doesNotMatch(siteJs, /--card-accent:/);
+  assert.doesNotMatch(siteJs, /--card-ink:/);
+  assert.match(siteCss, /\.item-card\s*\{[^}]*background:\s*var\(--soft/s);
+});
+
+test("collection card text uses global theme colors", () => {
+  assert.match(siteCss, /\.item-card\s*\{[^}]*color:\s*var\(--ink\)/s);
+  assert.match(siteCss, /\.item-card p\s*\{[^}]*color:\s*var\(--muted\)/s);
+  assert.match(siteCss, /\.item-card \.kicker\s*\{\s*color:\s*var\(--muted\)/);
+  assert.match(siteCss, /\.item-card \.text-action\s*\{[^}]*color:\s*var\(--ink\)/s);
 });
 
 test("collection cards stay aligned instead of using a staggered offset", () => {
@@ -38,6 +54,33 @@ test("collection images use a stable square area and cards cannot overflow their
 test("public page version-pins the paired theme assets", () => {
   assert.match(indexHtml, /assets\/site\.css\?v=[^"]+/);
   assert.match(indexHtml, /assets\/site\.js\?v=[^"]+/);
+});
+
+test("public site loads the global theme setting", () => {
+  assert.match(siteJs, /public_shop_settings/);
+  assert.match(siteJs, /global_theme/);
+  assert.match(siteJs, /resolveProductTheme/);
+});
+
+test("admin exposes and saves the global theme separately from product themes", () => {
+  assert.match(adminHtml, /Global Website Theme/);
+  assert.match(adminHtml, /id="global-theme-options"/);
+  assert.match(adminJs, /Use Global Theme/);
+  assert.match(adminJs, /shop_settings/);
+  assert.match(adminJs, /saveGlobalTheme/);
+});
+
+test("additive theme SQL creates secure global settings storage", () => {
+  assert.match(themeSql, /create table if not exists public\.shop_settings/i);
+  assert.match(themeSql, /global_theme/i);
+  assert.match(themeSql, /create or replace view public\.public_shop_settings/i);
+  assert.match(themeSql, /public\.is_portfolio_admin\(\)/i);
+});
+
+test("fresh shop setup includes the global theme system", () => {
+  assert.match(setupSql, /create table if not exists public\.shop_settings/i);
+  assert.match(setupSql, /public_shop_settings/i);
+  assert.match(setupSql, /'global', 'core'/i);
 });
 
 test("collection thumbnails fill their square frame without stretching", () => {

@@ -25,6 +25,10 @@ main { max-width: 1500px; margin: 0 auto; padding: 24px; }
 .item-sidebar, .editor, .preview-panel { background: var(--panel); border: 1px solid var(--line); }
 .item-sidebar, .preview-panel { position: sticky; top: 102px; }
 .item-sidebar { max-height: calc(100vh - 126px); overflow-y: auto; }
+.global-theme-manager { padding: 18px; border-bottom: 1px solid var(--line); }
+.global-theme-manager h2 { margin: 6px 0; font-family: var(--serif); font-weight: 400; }
+.global-theme-manager p { color: var(--muted); font-size: 12px; line-height: 1.45; }
+.global-theme-options { display: grid; gap: 7px; margin: 14px 0; }
 .sidebar-heading, .collection-manager-heading { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
 .collection-manager-heading { gap: 10px; }
 .collection-manager-heading h2 { margin: 6px 0 0; font-family: var(--serif); font-weight: 400; }
