@@ -53,6 +53,9 @@ create table public.shop_items (
     check (item_mode in ('regular', 'custom', 'hybrid')),
   request_subject text not null default '',
   request_intro text not null default '',
+  shopify_product_url text not null default '',
+  availability_status text not null default 'request-only'
+    check (availability_status in ('available', 'coming-soon', 'sold-out', 'request-only')),
   theme text not null default 'global'
     check (theme in ('global', 'core', 'sunfade', 'green', 'orange', 'blue', 'red', 'yellow', 'mono')),
   is_published boolean not null default false,
@@ -454,7 +457,9 @@ select
       on collection.id = membership.collection_id
     where membership.item_id = item.id
       and collection.is_visible = true
-  ), '[]'::jsonb) as collection_slugs
+  ), '[]'::jsonb) as collection_slugs,
+  item.shopify_product_url,
+  item.availability_status
 from public.shop_items item
 where item.is_published = true;
 

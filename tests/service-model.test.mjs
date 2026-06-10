@@ -9,6 +9,7 @@ const siteJs = await readFile(new URL("../docs/assets/site.js", import.meta.url)
 const resetSql = await readFile(new URL("../supabase-shop-business-reset.sql", import.meta.url), "utf8");
 const renewSql = await readFile(new URL("../supabase-shop-full-renew.sql", import.meta.url), "utf8");
 const oneLineRenewSql = await readFile(new URL("../RUN-THIS-SHIPS-RENEWAL.sql", import.meta.url), "utf8");
+const shopifyMigrationSql = await readFile(new URL("../supabase-shop-shopify-links.sql", import.meta.url), "utf8").catch(() => "");
 
 test("homepage presents SHIPS as an independent clothing brand", () => {
   assert.match(indexHtml, /Designed, made, and shipped\./);
@@ -84,4 +85,27 @@ test("custom domain and GitHub Pages paths remain safe", async () => {
 
   const publicFiles = [indexHtml, adminHtml, itemModel, siteJs].join("\n");
   assert.doesNotMatch(publicFiles, /github\.io|\/simon-request-shop\//i);
+});
+
+test("admin editor exposes plain Shopify URL and availability controls", () => {
+  assert.match(adminHtml, /Shopify Product URL/);
+  assert.match(adminHtml, /name="shopify_product_url"/);
+  assert.match(adminHtml, /name="availability_status"/);
+  for (const status of ["available", "coming-soon", "sold-out", "request-only"]) {
+    assert.match(adminHtml, new RegExp(`value="${status}"`));
+  }
+});
+
+test("shop uses plain Shopify links without Shopify APIs or credentials", () => {
+  const publicFiles = [indexHtml, adminHtml, itemModel, siteJs].join("\n");
+  assert.match(siteJs, /getProductAction/);
+  assert.doesNotMatch(publicFiles, /Storefront API|Shopify API|shopify[_-]token|access[_-]token/i);
+});
+
+test("Shopify availability migration preserves existing garments and exposes public fields", () => {
+  assert.match(shopifyMigrationSql, /alter table public\.shop_items[\s\S]*shopify_product_url/i);
+  assert.match(shopifyMigrationSql, /alter table public\.shop_items[\s\S]*availability_status/i);
+  assert.match(shopifyMigrationSql, /request-only/i);
+  assert.match(shopifyMigrationSql, /create or replace view public\.public_shop_items/i);
+  assert.doesNotMatch(shopifyMigrationSql, /delete from public\.shop_items|drop table public\.shop_items/i);
 });

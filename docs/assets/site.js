@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, DEFAULT_GLOBAL_THEME, filterItemsByCollection, getTheme, ITEM_MODES, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260610-themes";
+import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260610-shopify-links";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -85,8 +85,13 @@ function renderCollectionFilters() {
 function renderDetail(item) {
   item = toPublicGarmentCopy(item);
   applyTheme(resolveProductTheme(item.theme, globalTheme));
-  const mode = ITEM_MODES[item.item_mode];
-  const email = buildRequestEmail(item, ORDER_EMAIL);
+  const action = getProductAction(item, ORDER_EMAIL);
+  const primaryAction = action.disabled
+    ? `<button class="primary-action request-action" type="button" disabled>${escapeHtml(action.label)}</button>`
+    : `<a class="primary-action request-action" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`;
+  const secondaryAction = action.disabled
+    ? `<span class="availability-note">${escapeHtml(action.label)}</span>`
+    : `<a class="text-action" href="${escapeHtml(action.href)}">${action.type === "shopify" ? "Buy this garment" : "Inquire about this garment"} <span>&nearr;</span></a>`;
   const images = [item.main_image_url, ...item.gallery_urls].filter(Boolean);
   document.getElementById("item-detail").innerHTML = `<section class="detail-hero">
     <div class="detail-gallery">
@@ -99,7 +104,7 @@ function renderDetail(item) {
       <p class="summary">${escapeHtml(item.summary)}</p>
       <p>${escapeHtml(item.description)}</p>
       <div class="price-note">${escapeHtml(item.price_note)}</div>
-      <a class="primary-action request-action" href="${escapeHtml(email.href)}">${escapeHtml(mode.label)}</a>
+      ${primaryAction}
       <p class="fine-print">${escapeHtml(item.production_note)}</p>
     </div>
   </section>
@@ -113,7 +118,7 @@ function renderDetail(item) {
     <span class="kicker">Selected releases</span>
     <h2>Produced individually.</h2>
     <p>SHIPS releases selected garments and seasonal collections in small quantities. Availability, final pricing, and delivery details are confirmed personally. Custom print requests may be available for select garments.</p>
-    <a class="text-action" href="${escapeHtml(email.href)}">Inquire about this garment <span>&nearr;</span></a>
+    ${secondaryAction}
   </section>`;
 
   document.querySelectorAll("[data-gallery-image]").forEach((button) => button.addEventListener("click", () => {

@@ -100,6 +100,13 @@ export const ITEM_MODES = {
   },
 };
 
+export const AVAILABILITY_STATUSES = {
+  available: "Available",
+  "coming-soon": "Coming Soon",
+  "sold-out": "Sold Out",
+  "request-only": "Request Only",
+};
+
 export function createSlug(value = "") {
   return String(value)
     .toLowerCase()
@@ -138,6 +145,7 @@ export function normalizeCollections(collections = []) {
 export function normalizeItem(item = {}) {
   const itemMode = ITEM_MODES[item.item_mode] ? item.item_mode : "regular";
   const theme = item.theme === "global" || THEMES[item.theme] ? item.theme : "global";
+  const availabilityStatus = AVAILABILITY_STATUSES[item.availability_status] ? item.availability_status : "request-only";
   return {
     id: item.id || "",
     slug: item.slug || createSlug(item.title || "untitled-item"),
@@ -155,6 +163,8 @@ export function normalizeItem(item = {}) {
     item_mode: itemMode,
     request_subject: item.request_subject || "",
     request_intro: item.request_intro || "",
+    shopify_product_url: String(item.shopify_product_url || "").trim(),
+    availability_status: availabilityStatus,
     theme,
     is_featured: Boolean(item.is_featured),
     is_published: Boolean(item.is_published),
@@ -219,4 +229,27 @@ export function buildRequestEmail(rawItem, recipient = ORDER_EMAIL) {
     body,
     href: `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
   };
+}
+
+function isSafeWebUrl(value) {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export function getProductAction(rawItem, recipient = ORDER_EMAIL) {
+  const item = normalizeItem(rawItem);
+  if (item.availability_status === "coming-soon") {
+    return { type: "disabled", label: "COMING SOON", href: "", disabled: true };
+  }
+  if (item.availability_status === "sold-out") {
+    return { type: "disabled", label: "SOLD OUT", href: "", disabled: true };
+  }
+  if (item.availability_status === "available" && isSafeWebUrl(item.shopify_product_url)) {
+    return { type: "shopify", label: "BUY NOW", href: item.shopify_product_url, disabled: false };
+  }
+  const email = buildRequestEmail(item, recipient);
+  return { type: "email", label: "REQUEST GARMENT", href: email.href, disabled: false };
 }

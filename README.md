@@ -47,6 +47,12 @@ Run `supabase-shop-themes.sql` once in the Supabase SQL Editor. It preserves eve
 
 After running it, upload the updated `docs` folder. The private editor can switch the whole site between Core, Sunfade, Clear Blue, Soft Orange, Warm Yellow, Fresh Green, and Studio Red. Individual products can inherit the global theme or use their own selection.
 
+## Adding Shopify Links And Availability To An Existing Shop
+
+Run `supabase-shop-shopify-links.sql` once in the Supabase SQL Editor before uploading the updated `docs` folder. This additive migration preserves every garment, image, collection, and theme. Existing garments default to **Request Only**, so their current email request buttons continue working until you deliberately change them.
+
+In the private editor, set an availability status and optionally paste a normal Shopify product or checkout URL. An **Available** garment with a Shopify URL shows **Buy Now**. No Shopify API, Storefront API, token, or payment credential is used or stored by this site.
+
 ## Security Model
 
 - The site contains a Supabase **publishable** browser key. This key is intentionally safe to expose and cannot be hidden in a plain static GitHub Pages site.

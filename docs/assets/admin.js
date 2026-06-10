@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
-import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260610-themes";
+import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260610-shopify-links";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const form = document.getElementById("item-form");
@@ -95,6 +95,8 @@ function collectItem() {
     item_mode: form.elements.item_mode.value,
     request_subject: formValue("request_subject"),
     request_intro: formValue("request_intro"),
+    shopify_product_url: formValue("shopify_product_url"),
+    availability_status: form.elements.availability_status.value,
     theme: form.elements.theme.value,
     is_published: form.elements.is_published.checked,
     is_featured: form.elements.is_featured.checked,
@@ -108,6 +110,7 @@ function resetForm() {
   document.getElementById("main-preview").hidden = true;
   form.elements.theme.value = "global";
   form.elements.item_mode.value = "regular";
+  form.elements.availability_status.value = "request-only";
   renderItemCollectionOptions();
   setMessage();
   renderPreview();
@@ -146,11 +149,16 @@ function renderPreview() {
   const item = normalizeItem(collectItem());
   const theme = getTheme(resolveProductTheme(item.theme, globalTheme));
   const email = buildRequestEmail(item, ORDER_EMAIL);
+  const action = getProductAction(item, ORDER_EMAIL);
+  const actionDetails = action.type === "email"
+    ? `<pre>${email.body}</pre>`
+    : `<p>${action.type === "shopify" ? escapeHtml(action.href) : "The public action button is disabled."}</p>`;
   document.getElementById("editor-preview").innerHTML = `${item.main_image_url ? `<img src="${item.main_image_url}" alt="" />` : "<p>No image yet.</p>"}
     <h3>${item.title}</h3>
     <p>${ITEM_MODES[item.item_mode].name} / Theme: ${theme.name}</p>
     <p>${item.summary || "No summary yet."}</p>
-    <pre>${email.body}</pre>`;
+    <p><strong>Public button: ${action.label}</strong></p>
+    ${actionDetails}`;
 }
 
 async function loadAdminData(preferredItemId = "") {

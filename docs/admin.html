@@ -7,7 +7,7 @@
     <title>Shop Editor | SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css?v=20260610-themes" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260610-shopify-links" />
   </head>
   <body>
     <header class="admin-header">
@@ -84,6 +84,10 @@
               <label>Garment type<input name="eyebrow" placeholder="T-Shirt / Hoodie / Polo" /></label>
               <label>Listing type<select name="item_mode"><option value="regular">Collection garment</option><option value="hybrid">Selected garment</option><option value="custom">Selected garment</option></select></label>
             </div>
+            <div class="form-grid">
+              <label>Availability status<select name="availability_status"><option value="available">Available</option><option value="coming-soon">Coming Soon</option><option value="sold-out">Sold Out</option><option value="request-only" selected>Request Only</option></select></label>
+              <label>Shopify Product URL <small>Optional. Paste a Shopify product or checkout link.</small><input name="shopify_product_url" type="url" placeholder="https://example.myshopify.com/products/garment" /></label>
+            </div>
 
             <label>Short summary<textarea name="summary" rows="3"></textarea></label>
             <label>Full description<textarea name="description" rows="7"></textarea></label>
@@ -138,6 +142,6 @@
       </section>
     </main>
 
-    <script type="module" src="assets/admin.js?v=20260610-themes"></script>
+    <script type="module" src="assets/admin.js?v=20260610-shopify-links"></script>
   </body>
 </html>

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   buildRequestEmail,
+  getProductAction,
   normalizeItem,
   normalizeItems,
   parseLines,
@@ -19,9 +20,61 @@ test("normalizeItem supplies safe defaults and preserves the supported item mode
 });
 
 test("normalizeItem rejects unsupported item modes and themes", () => {
-  const item = normalizeItem({ item_mode: "instant-checkout", theme: "unknown" });
+  const item = normalizeItem({ item_mode: "instant-checkout", theme: "unknown", availability_status: "unknown" });
   assert.equal(item.item_mode, "regular");
   assert.equal(item.theme, "global");
+  assert.equal(item.availability_status, "request-only");
+});
+
+test("existing garments default to request-only with no Shopify URL", () => {
+  const item = normalizeItem({ title: "Archive Tee" });
+  assert.equal(item.availability_status, "request-only");
+  assert.equal(item.shopify_product_url, "");
+});
+
+test("available garments with a Shopify URL use a same-tab buy action", () => {
+  const url = "https://m2fqhe-2r.myshopify.com/products/past-v-future-essential-cotton-t-shirt";
+  const action = getProductAction({ title: "Shop Tee", availability_status: "available", shopify_product_url: ` ${url} ` });
+  assert.deepEqual(action, { type: "shopify", label: "BUY NOW", href: url, disabled: false });
+});
+
+test("available garments without a Shopify URL retain the email request flow", () => {
+  const action = getProductAction({ title: "Request Tee", availability_status: "available" }, "orders@example.com");
+  assert.equal(action.type, "email");
+  assert.equal(action.label, "REQUEST GARMENT");
+  assert.equal(action.disabled, false);
+  assert.match(action.href, /^mailto:orders@example\.com\?/);
+});
+
+test("available garments with unsafe non-web URLs retain the email request flow", () => {
+  const action = getProductAction({
+    title: "Unsafe Link Tee",
+    availability_status: "available",
+    shopify_product_url: "javascript:alert('nope')",
+  });
+  assert.equal(action.type, "email");
+  assert.equal(action.label, "REQUEST GARMENT");
+  assert.match(action.href, /^mailto:/);
+});
+
+test("request-only ignores Shopify URLs and retains the email request flow", () => {
+  const action = getProductAction({
+    title: "Private Release",
+    availability_status: "request-only",
+    shopify_product_url: "https://example.myshopify.com/products/private-release",
+  });
+  assert.equal(action.type, "email");
+  assert.equal(action.label, "REQUEST GARMENT");
+  assert.match(action.href, /^mailto:/);
+});
+
+test("coming-soon and sold-out garments use disabled actions", () => {
+  assert.deepEqual(getProductAction({ availability_status: "coming-soon" }), {
+    type: "disabled", label: "COMING SOON", href: "", disabled: true,
+  });
+  assert.deepEqual(getProductAction({ availability_status: "sold-out" }), {
+    type: "disabled", label: "SOLD OUT", href: "", disabled: true,
+  });
 });
 
 test("normalizeItems preserves an intentionally empty collection", () => {
