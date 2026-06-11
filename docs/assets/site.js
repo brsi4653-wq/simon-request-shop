@@ -8,9 +8,11 @@ let items = [];
 let collections = [];
 let activeCollection = "all";
 let globalTheme = DEFAULT_GLOBAL_THEME;
+let homepageSettings = { hero_media_type: "icon", hero_icon_style: "orbit-shop", hero_image_url: "", hero_product_id: "" };
 const views = [...document.querySelectorAll(".view")];
 const navButtons = [...document.querySelectorAll("[data-view]")];
 const brandLogo = document.getElementById("brand-logo");
+const heroVisual = document.getElementById("hero-visual");
 
 function escapeHtml(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
@@ -37,6 +39,32 @@ function imagePlaceholder(title) {
     <span class="kicker">Garment preview</span>
     <strong>Image coming soon</strong>
   </div>`;
+}
+
+function renderHeroVisual() {
+  if (!heroVisual) return;
+  const selectedProduct = items.find((item) => item.id === homepageSettings.hero_product_id);
+  if (homepageSettings.hero_media_type === "product" && selectedProduct?.main_image_url) {
+    heroVisual.className = "hero-art hero-cover";
+    heroVisual.innerHTML = `<button data-item="${escapeHtml(selectedProduct.slug)}" aria-label="View ${escapeHtml(selectedProduct.title)}"><img src="${escapeHtml(selectedProduct.main_image_url)}" alt="${escapeHtml(selectedProduct.title)}" /></button>`;
+    return;
+  }
+  if (homepageSettings.hero_media_type === "image" && homepageSettings.hero_image_url) {
+    heroVisual.className = "hero-art hero-cover";
+    heroVisual.innerHTML = `<img src="${escapeHtml(homepageSettings.hero_image_url)}" alt="" />`;
+    return;
+  }
+  const style = homepageSettings.hero_icon_style || "orbit-shop";
+  const imageByStyle = {
+    "orbit-shop": "images/logos/the-ships-shop-display.png",
+    "orbit-ships": "images/logos/ships-main-white-display.png",
+    "orbit-tag": "images/logos/ships-tag-display.png",
+    "plain-shop": "images/logos/the-ships-shop-display.png",
+    "plain-ships": "images/logos/ships-main-white-display.png",
+  };
+  const plain = style.startsWith("plain-");
+  heroVisual.className = `hero-art hero-icon-style-${style}`;
+  heroVisual.innerHTML = `${plain ? "" : '<span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>'}${imageByStyle[style] ? `<img src="${imageByStyle[style]}" alt="" />` : ""}`;
 }
 
 function itemCard(item) {
@@ -160,12 +188,19 @@ async function loadItems() {
   const [itemResult, collectionResult, settingResult] = await Promise.all([
     supabase.from("public_shop_items").select("*").order("created_at", { ascending: false }),
     supabase.from("public_shop_collections").select("*").order("sort_order").order("name"),
-    supabase.from("public_shop_settings").select("global_theme").eq("id", "global").maybeSingle(),
+    supabase.from("public_shop_settings").select("*").eq("id", "global").maybeSingle(),
   ]);
   if (!itemResult.error) items = normalizeItems(itemResult.data);
   if (!collectionResult.error) collections = normalizeCollections(collectionResult.data);
   if (!settingResult.error && getTheme(settingResult.data?.global_theme)) globalTheme = settingResult.data?.global_theme || DEFAULT_GLOBAL_THEME;
+  if (!settingResult.error && settingResult.data) homepageSettings = {
+    hero_media_type: settingResult.data.hero_media_type || "icon",
+    hero_icon_style: settingResult.data.hero_icon_style || "orbit-shop",
+    hero_image_url: settingResult.data.hero_image_url || "",
+    hero_product_id: settingResult.data.hero_product_id || "",
+  };
   applyTheme(globalTheme);
+  renderHeroVisual();
   renderCollectionFilters();
   renderCollection();
   bindButtons();
@@ -176,6 +211,7 @@ async function loadItems() {
 navButtons.forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 document.getElementById("year").textContent = new Date().getFullYear();
 applyTheme(globalTheme);
+renderHeroVisual();
 renderCollectionFilters();
 renderCollection();
 bindButtons();

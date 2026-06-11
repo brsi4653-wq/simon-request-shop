@@ -10,6 +10,16 @@ let items = [];
 let collections = [];
 let savedAdminUser = null;
 let globalTheme = DEFAULT_GLOBAL_THEME;
+let homepageSettings = { hero_media_type: "icon", hero_icon_style: "orbit-shop", hero_image_url: "", hero_product_id: "" };
+
+const HERO_ART_STYLES = {
+  "orbit-shop": "Orbit / Shop Mark",
+  "orbit-ships": "Orbit / SHIPS",
+  "orbit-tag": "Orbit / Tag",
+  "plain-shop": "Shop Mark",
+  "plain-ships": "SHIPS Mark",
+  "rings-only": "Rings Only",
+};
 
 function isAdmin(user) {
   return user?.email?.toLowerCase() === ADMIN_EMAIL;
@@ -40,6 +50,15 @@ function renderControls() {
   document.getElementById("global-theme-options").innerHTML = Object.entries(THEMES)
     .map(([key, theme]) => `<label class="theme-choice"><input type="radio" name="global_theme" value="${key}" ${key === globalTheme ? "checked" : ""} /><span class="theme-swatch" style="background:${theme.accent}"></span>${theme.name}</label>`)
     .join("");
+  document.getElementById("hero-art-options").innerHTML = Object.entries(HERO_ART_STYLES)
+    .map(([key, label]) => `<label class="theme-choice"><input type="radio" name="hero_icon_style" value="${key}" ${key === homepageSettings.hero_icon_style ? "checked" : ""} />${label}</label>`)
+    .join("");
+  document.getElementById("hero-media-type").value = homepageSettings.hero_media_type;
+  document.getElementById("hero-image-url").value = homepageSettings.hero_image_url || "";
+  document.getElementById("hero-product-select").innerHTML = [
+    '<option value="">Choose a product</option>',
+    ...items.filter((item) => item.is_published).map((item) => `<option value="${item.id}" ${item.id === homepageSettings.hero_product_id ? "selected" : ""}>${escapeHtml(item.title)}</option>`),
+  ].join("");
 }
 
 function selectedCollectionIds() {
@@ -150,6 +169,7 @@ function renderPreview() {
   const theme = getTheme(resolveProductTheme(item.theme, globalTheme));
   const email = buildRequestEmail(item, ORDER_EMAIL);
   const action = getProductAction(item, ORDER_EMAIL);
+  const missingShopifyUrl = item.availability_status === "available" && !item.shopify_product_url;
   const actionDetails = action.type === "email"
     ? `<pre>${email.body}</pre>`
     : `<p>${action.type === "shopify" ? escapeHtml(action.href) : "The public action button is disabled."}</p>`;
@@ -158,6 +178,7 @@ function renderPreview() {
     <p>${ITEM_MODES[item.item_mode].name} / Theme: ${theme.name}</p>
     <p>${item.summary || "No summary yet."}</p>
     <p><strong>Public button: ${action.label}</strong></p>
+    ${missingShopifyUrl ? '<p class="editor-warning"><strong>Shopify URL is empty.</strong> Available will use REQUEST GARMENT until a Shopify URL is saved.</p>' : ""}
     ${actionDetails}`;
 }
 
@@ -166,7 +187,7 @@ async function loadAdminData(preferredItemId = "") {
     supabase.from("shop_collections").select("*").order("sort_order").order("name"),
     supabase.from("shop_items").select("*").order("updated_at", { ascending: false }),
     supabase.from("shop_item_collections").select("item_id, collection_id"),
-    supabase.from("shop_settings").select("global_theme").eq("id", "global").maybeSingle(),
+    supabase.from("shop_settings").select("*").eq("id", "global").maybeSingle(),
   ]);
   if (collectionResult.error || membershipResult.error) {
     return setMessage("Collections are not ready yet. Run supabase-shop-collections-step-1.sql, then supabase-shop-collections-step-2.sql in Supabase.", true);
@@ -174,12 +195,18 @@ async function loadAdminData(preferredItemId = "") {
   if (itemResult.error) return setMessage("The shop database is not ready yet. Run supabase-shop-setup.sql in Supabase.", true);
   collections = normalizeCollections(collectionResult.data || []);
   if (!settingResult.error && THEMES[settingResult.data?.global_theme]) globalTheme = settingResult.data.global_theme;
-  renderControls();
+  if (!settingResult.error && settingResult.data) homepageSettings = {
+    hero_media_type: settingResult.data.hero_media_type || "icon",
+    hero_icon_style: settingResult.data.hero_icon_style || "orbit-shop",
+    hero_image_url: settingResult.data.hero_image_url || "",
+    hero_product_id: settingResult.data.hero_product_id || "",
+  };
   const memberships = membershipResult.data || [];
   items = (itemResult.data || []).map((item) => normalizeItem({
     ...item,
     collection_ids: memberships.filter((membership) => membership.item_id === item.id).map((membership) => membership.collection_id),
   }));
+  renderControls();
   renderCollectionManager();
   renderList();
   if (items.length) fillForm(items.find((item) => item.id === preferredItemId) || items[0]);
@@ -192,6 +219,28 @@ async function saveGlobalTheme() {
   if (error) return setMessage(error.message, true);
   globalTheme = selected;
   setMessage(`Global website theme changed to ${THEMES[selected].name}.`);
+}
+
+async function saveHomepageSettings() {
+  try {
+    let heroImageUrl = document.getElementById("hero-image-url").value.trim();
+    const file = document.getElementById("hero-image-file").files[0];
+    if (file) heroImageUrl = await uploadFile(file, "homepage");
+    const settings = {
+      id: "global",
+      hero_media_type: document.getElementById("hero-media-type").value,
+      hero_icon_style: document.querySelector('input[name="hero_icon_style"]:checked')?.value || "orbit-shop",
+      hero_image_url: heroImageUrl,
+      hero_product_id: document.getElementById("hero-product-select").value || null,
+    };
+    const { error } = await supabase.from("shop_settings").upsert(settings);
+    if (error) throw error;
+    homepageSettings = { ...settings, hero_product_id: settings.hero_product_id || "" };
+    document.getElementById("hero-image-url").value = heroImageUrl;
+    setMessage("Homepage cover saved.");
+  } catch (error) {
+    setMessage(error.message || "Homepage cover could not be saved.", true);
+  }
 }
 
 async function createCollection() {
@@ -291,7 +340,13 @@ async function saveItem(event) {
       : await supabase.from("shop_items").insert(item).select().single();
     if (result.error) throw result.error;
     await saveItemCollections(result.data.id, collectionIds);
-    setMessage(item.is_published ? "Garment saved and published." : "Garment draft saved privately.");
+    const missingShopifyUrl = item.availability_status === "available" && !item.shopify_product_url;
+    setMessage(
+      missingShopifyUrl
+        ? "Garment saved, but Shopify URL is empty. The public button will remain REQUEST GARMENT."
+        : (item.is_published ? "Garment saved and published." : "Garment draft saved privately."),
+      missingShopifyUrl,
+    );
     await loadAdminData(result.data.id);
   } catch (error) {
     setMessage(error.message || "The garment could not be saved.", true);
@@ -358,6 +413,7 @@ form.addEventListener("input", () => {
 document.getElementById("new-item").addEventListener("click", resetForm);
 document.getElementById("new-collection").addEventListener("click", createCollection);
 document.getElementById("save-global-theme").addEventListener("click", saveGlobalTheme);
+document.getElementById("save-homepage-settings").addEventListener("click", saveHomepageSettings);
 document.getElementById("delete-item").addEventListener("click", deleteItem);
 document.getElementById("duplicate-item").addEventListener("click", duplicateItem);
 document.getElementById("publish-item").addEventListener("click", () => {

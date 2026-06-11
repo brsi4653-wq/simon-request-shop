@@ -47,6 +47,14 @@ Run `supabase-shop-themes.sql` once in the Supabase SQL Editor. It preserves eve
 
 After running it, upload the updated `docs` folder. The private editor can switch the whole site between Core, Sunfade, Clear Blue, Soft Orange, Warm Yellow, Fresh Green, and Studio Red. Individual products can inherit the global theme or use their own selection.
 
+## Adding Homepage Cover Controls To An Existing Shop
+
+Run `supabase-shop-homepage-settings.sql` once in the Supabase SQL Editor. It adds homepage cover controls without deleting or changing any garments. The private editor can then show one of six SHIPS hero-art styles, an uploaded homepage image, or a published product on the homepage.
+
+The public request and purchase email is `purchase@theshipsshop.com`. The private admin login remains authorized to the existing iCloud Google account so the editor does not lock you out.
+
+Run `supabase-shop-purchase-email.sql` once if the old address was ever typed into saved garment descriptions or request wording. It only replaces that address in saved public garment copy; it does not alter the private admin login.
+
 ## Adding Shopify Links And Availability To An Existing Shop
 
 Run `supabase-shop-shopify-links.sql` once in the Supabase SQL Editor before uploading the updated `docs` folder. This additive migration preserves every garment, image, collection, and theme. Existing garments default to **Request Only**, so their current email request buttons continue working until you deliberately change them.

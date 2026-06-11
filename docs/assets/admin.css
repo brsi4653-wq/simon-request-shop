@@ -27,6 +27,10 @@ main { max-width: 1500px; margin: 0 auto; padding: 24px; }
 .item-sidebar { max-height: calc(100vh - 126px); overflow-y: auto; }
 .global-theme-manager { padding: 18px; border-bottom: 1px solid var(--line); }
 .global-theme-manager h2 { margin: 6px 0; font-family: var(--serif); font-weight: 400; }
+.homepage-manager { padding: 18px; border-bottom: 1px solid var(--line); }
+.homepage-manager h2 { margin: 6px 0; font-family: var(--serif); font-weight: 400; }
+.homepage-manager p { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.hero-art-options { display: grid; gap: 5px; margin: 10px 0; }
 .global-theme-manager p { color: var(--muted); font-size: 12px; line-height: 1.45; }
 .global-theme-options { display: grid; gap: 7px; margin: 14px 0; }
 .sidebar-heading, .collection-manager-heading { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
@@ -69,6 +73,7 @@ button, .quiet-button, .primary-button, .danger-button { border: 1px solid var(-
 .new-collection-button { flex: 0 0 auto; border: 1px solid var(--line); padding: 8px 9px; background: var(--soft); color: var(--text); font-size: 10px; font-weight: 800; cursor: pointer; }
 .message { min-height: 21px; margin: 0; padding: 0 18px; color: var(--muted); }
 .message.error { color: var(--danger); }
+.editor-warning { padding: 12px; border-left: 4px solid var(--danger); background: #fff0ed; color: var(--danger) !important; }
 .preview-panel { padding: 18px; }
 #editor-preview { margin-top: 16px; display: grid; gap: 12px; }
 #editor-preview img { width: 100%; max-height: 250px; object-fit: contain; background: #fff; border: 1px solid var(--line); }

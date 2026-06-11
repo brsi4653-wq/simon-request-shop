@@ -13,6 +13,10 @@ create table if not exists public.shop_settings (
   id text primary key,
   global_theme text not null default 'core'
     check (global_theme in ('core', 'sunfade', 'green', 'orange', 'blue', 'red', 'yellow', 'mono')),
+  hero_media_type text not null default 'icon' check (hero_media_type in ('icon', 'image', 'product')),
+  hero_icon_style text not null default 'orbit-shop' check (hero_icon_style in ('orbit-shop', 'orbit-ships', 'orbit-tag', 'plain-shop', 'plain-ships', 'rings-only')),
+  hero_image_url text not null default '',
+  hero_product_id uuid references public.shop_items(id) on delete set null,
   updated_at timestamptz not null default now()
 );
 
@@ -41,10 +45,12 @@ with check (public.is_portfolio_admin());
 revoke all on public.shop_settings from anon, authenticated;
 grant select, insert, update on public.shop_settings to authenticated;
 
+drop view if exists public.public_shop_settings;
+
 create or replace view public.public_shop_settings
 with (security_barrier = true)
 as
-select id, global_theme
+select id, global_theme, hero_media_type, hero_icon_style, hero_image_url, hero_product_id
 from public.shop_settings
 where id = 'global';
 

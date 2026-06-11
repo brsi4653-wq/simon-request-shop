@@ -15,8 +15,34 @@ test("homepage presents SHIPS as an independent clothing brand", () => {
   assert.match(indexHtml, /Designed, made, and shipped\./);
   assert.match(indexHtml, /independent clothing project based in Nova Scotia/i);
   assert.match(indexHtml, /View collection/);
-  assert.match(indexHtml, /Browse garments/);
+  assert.doesNotMatch(indexHtml, /Browse garments/);
   assert.doesNotMatch(indexHtml, /Your idea|Send us your artwork|Send your idea|We design and ship it|Choose a garment/i);
+});
+
+test("customer requests use the SHIPS purchase email without changing private admin authorization", async () => {
+  const config = await readFile(new URL("../docs/assets/config.js", import.meta.url), "utf8");
+  assert.match(config, /ORDER_EMAIL\s*=\s*"purchase@theshipsshop\.com"/);
+  assert.match(config, /ADMIN_EMAIL\s*=\s*"simon_j_brookes@icloud\.com"/);
+  assert.match(itemModel, /ORDER_EMAIL\s*=\s*"purchase@theshipsshop\.com"/);
+});
+
+test("purchase email cleanup updates saved garment copy without changing admin authorization", async () => {
+  const migration = await readFile(new URL("../supabase-shop-purchase-email.sql", import.meta.url), "utf8");
+  assert.match(migration, /purchase@theshipsshop\.com/);
+  assert.match(migration, /update public\.shop_items/);
+  assert.doesNotMatch(migration, /is_portfolio_admin/);
+  assert.doesNotMatch(migration, /delete from public\.shop_items/);
+});
+
+test("admin exposes homepage cover and six hero-art choices", async () => {
+  const adminJs = await readFile(new URL("../docs/assets/admin.js", import.meta.url), "utf8");
+  assert.match(adminHtml, /Homepage Cover/);
+  assert.match(adminHtml, /name="hero_media_type"/);
+  assert.match(adminHtml, /id="hero-image-file"/);
+  assert.match(adminHtml, /id="hero-product-select"/);
+  assert.match(adminJs, /HERO_ART_STYLES/);
+  assert.match(adminJs, /saveHomepageSettings/);
+  assert.match(siteJs, /renderHeroVisual/);
 });
 
 test("image-free listings use a deliberate placeholder instead of the demo product image", () => {
@@ -94,6 +120,12 @@ test("admin editor exposes plain Shopify URL and availability controls", () => {
   for (const status of ["available", "coming-soon", "sold-out", "request-only"]) {
     assert.match(adminHtml, new RegExp(`value="${status}"`));
   }
+});
+
+test("admin editor clearly warns when Available will fall back to email", async () => {
+  const adminJs = await readFile(new URL("../docs/assets/admin.js", import.meta.url), "utf8");
+  assert.match(adminJs, /Shopify URL is empty/);
+  assert.match(adminJs, /REQUEST GARMENT/);
 });
 
 test("shop uses plain Shopify links without Shopify APIs or credentials", () => {

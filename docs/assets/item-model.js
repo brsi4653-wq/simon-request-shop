@@ -1,4 +1,4 @@
-export const ORDER_EMAIL = "simon_j_brookes@icloud.com";
+export const ORDER_EMAIL = "purchase@theshipsshop.com";
 export const MAX_COLLECTIONS = 6;
 export const DEFAULT_GLOBAL_THEME = "core";
 

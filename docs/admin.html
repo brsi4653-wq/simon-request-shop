@@ -7,7 +7,7 @@
     <title>Shop Editor | SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css?v=20260610-shopify-links" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260611-homepage-controls" />
   </head>
   <body>
     <header class="admin-header">
@@ -36,6 +36,17 @@
             <p>Controls the homepage, collection, navigation, cards, and footer.</p>
             <div id="global-theme-options" class="global-theme-options"></div>
             <button id="save-global-theme" class="primary-button" type="button">Save Global Theme</button>
+          </div>
+          <div class="homepage-manager">
+            <span class="eyebrow">Homepage Appearance</span>
+            <h2>Homepage Cover</h2>
+            <p>Show a SHIPS icon, an uploaded image, or a published product beside the homepage headline.</p>
+            <label>Cover type<select name="hero_media_type" id="hero-media-type"><option value="icon">Icon</option><option value="image">Uploaded image</option><option value="product">Product</option></select></label>
+            <div id="hero-art-options" class="hero-art-options"></div>
+            <label>Homepage image URL<input id="hero-image-url" type="url" /></label>
+            <label>Upload homepage image<input id="hero-image-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+            <label>Homepage product<select id="hero-product-select"><option value="">Choose a product</option></select></label>
+            <button id="save-homepage-settings" class="primary-button" type="button">Save Homepage Cover</button>
           </div>
           <div class="collection-manager-heading">
             <div>
@@ -142,6 +153,6 @@
       </section>
     </main>
 
-    <script type="module" src="assets/admin.js?v=20260610-shopify-links"></script>
+    <script type="module" src="assets/admin.js?v=20260611-homepage-controls"></script>
   </body>
 </html>

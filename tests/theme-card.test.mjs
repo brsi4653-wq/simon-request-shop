@@ -10,6 +10,7 @@ const adminHtml = await readFile(new URL("../docs/admin.html", import.meta.url),
 const adminJs = await readFile(new URL("../docs/assets/admin.js", import.meta.url), "utf8");
 const themeSql = await readFile(new URL("../supabase-shop-themes.sql", import.meta.url), "utf8");
 const setupSql = await readFile(new URL("../supabase-shop-setup.sql", import.meta.url), "utf8");
+const homepageSql = await readFile(new URL("../supabase-shop-homepage-settings.sql", import.meta.url), "utf8").catch(() => "");
 
 test("theme catalogue includes the requested reusable presets", () => {
   assert.equal(DEFAULT_GLOBAL_THEME, "core");
@@ -81,6 +82,15 @@ test("fresh shop setup includes the global theme system", () => {
   assert.match(setupSql, /create table if not exists public\.shop_settings/i);
   assert.match(setupSql, /public_shop_settings/i);
   assert.match(setupSql, /'global', 'core'/i);
+});
+
+test("homepage settings migration is additive and supports icon image and product covers", () => {
+  assert.match(homepageSql, /hero_media_type/i);
+  assert.match(homepageSql, /hero_icon_style/i);
+  assert.match(homepageSql, /hero_image_url/i);
+  assert.match(homepageSql, /hero_product_id/i);
+  assert.match(homepageSql, /create or replace view public\.public_shop_settings/i);
+  assert.doesNotMatch(homepageSql, /drop table public\.shop_items|delete from public\.shop_items/i);
 });
 
 test("collection thumbnails fill their square frame without stretching", () => {
