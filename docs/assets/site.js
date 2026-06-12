@@ -1,5 +1,5 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
+import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
 import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260610-shopify-links";
 import { addCartItem, buildCartRequestEmail, canAddToCart, cartQuantity, CART_STORAGE_KEY, normalizeCart, reconcileCart, removeCartItem, updateCartItem } from "./cart-model.js?v=20260611";
 import { HEADER_LOGOS, normalizeAppearance } from "./settings-model.js?v=20260611";

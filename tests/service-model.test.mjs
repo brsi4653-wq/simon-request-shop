@@ -22,9 +22,12 @@ test("homepage presents SHIPS as an independent clothing brand", () => {
 
 test("customer requests use the SHIPS purchase email without changing private admin authorization", async () => {
   const config = await readFile(new URL("../docs/assets/config.js", import.meta.url), "utf8");
+  const adminJs = await readFile(new URL("../docs/assets/admin.js", import.meta.url), "utf8");
   assert.match(config, /ORDER_EMAIL\s*=\s*"purchase@theshipsshop\.com"/);
   assert.match(config, /ADMIN_EMAIL\s*=\s*"simon_j_brookes@icloud\.com"/);
   assert.match(itemModel, /ORDER_EMAIL\s*=\s*"purchase@theshipsshop\.com"/);
+  assert.match(siteJs, /from "\.\/config\.js\?v=20260612-purchase-email"/);
+  assert.match(adminJs, /from "\.\/config\.js\?v=20260612-purchase-email"/);
 });
 
 test("purchase email cleanup updates saved garment copy without changing admin authorization", async () => {

@@ -1,5 +1,5 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
+import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
 import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260610-shopify-links";
 import { normalizeAppearance } from "./settings-model.js?v=20260611";
 
