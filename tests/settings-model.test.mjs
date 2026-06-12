@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { DEFAULT_APPEARANCE, normalizeAppearance } from "../docs/assets/settings-model.js";
+import { DEFAULT_APPEARANCE, normalizeAppearance, resolveHeaderLogo } from "../docs/assets/settings-model.js";
 
 test("appearance settings provide complete safe defaults", () => {
   const settings = normalizeAppearance();
@@ -24,3 +24,10 @@ test("appearance settings preserve valid choices and reject unsupported choices"
   assert.equal(settings.motion, DEFAULT_APPEARANCE.motion);
 });
 
+test("main SHIPS header logo follows theme contrast while alternate marks remain selectable", () => {
+  const darkLogo = "images/logos/ships-main-black-display.png";
+  const lightLogo = "images/logos/ships-main-white-display.png";
+  assert.equal(resolveHeaderLogo(darkLogo, "ships-white"), darkLogo);
+  assert.equal(resolveHeaderLogo(lightLogo, "ships-black"), lightLogo);
+  assert.equal(resolveHeaderLogo(darkLogo, "ships-tag"), "images/logos/ships-tag-display.png");
+});

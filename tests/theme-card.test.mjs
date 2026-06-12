@@ -61,6 +61,7 @@ test("public site loads the global theme setting", () => {
   assert.match(siteJs, /public_shop_settings/);
   assert.match(siteJs, /global_theme/);
   assert.match(siteJs, /resolveProductTheme/);
+  assert.match(siteJs, /resolveHeaderLogo\(theme\.logo, appearance\.header_logo\)/);
 });
 
 test("admin exposes and saves the global theme separately from product themes", () => {

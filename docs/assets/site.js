@@ -2,7 +2,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
 import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260612-featured-catalogue";
 import { addCartItem, buildCartRequestEmail, canAddToCart, cartQuantity, CART_STORAGE_KEY, normalizeCart, reconcileCart, removeCartItem, updateCartItem } from "./cart-model.js?v=20260611";
-import { HEADER_LOGOS, normalizeAppearance } from "./settings-model.js?v=20260611";
+import { normalizeAppearance, resolveHeaderLogo } from "./settings-model.js?v=20260612-readable-logo";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -47,7 +47,7 @@ function applyTheme(themeName = globalTheme) {
   document.documentElement.style.setProperty("--ink", theme.ink);
   document.documentElement.style.setProperty("--muted", theme.muted);
   document.documentElement.style.setProperty("--accent", theme.accent);
-  brandLogo.src = HEADER_LOGOS[appearance.header_logo] || theme.logo;
+  brandLogo.src = resolveHeaderLogo(theme.logo, appearance.header_logo);
 }
 
 function applyAppearance() {

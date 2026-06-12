@@ -57,3 +57,7 @@ export const HEADER_LOGOS = {
   "ships-shop": "images/logos/the-ships-shop-display.png",
 };
 
+export function resolveHeaderLogo(themeLogo, preferredLogo = "ships-white") {
+  if (preferredLogo === "ships-white" || preferredLogo === "ships-black") return themeLogo;
+  return HEADER_LOGOS[preferredLogo] || themeLogo;
+}
