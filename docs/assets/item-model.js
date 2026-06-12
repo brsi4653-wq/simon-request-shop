@@ -204,6 +204,7 @@ export function resolveProductTheme(productTheme, globalTheme = DEFAULT_GLOBAL_T
 }
 
 export function filterItemsByCollection(items = [], collectionSlug = "all") {
+  if (collectionSlug === "featured") return items.filter((item) => normalizeItem(item).is_featured);
   if (collectionSlug === "all") return items;
   return items.filter((item) => normalizeItem(item).collection_slugs.includes(collectionSlug));
 }

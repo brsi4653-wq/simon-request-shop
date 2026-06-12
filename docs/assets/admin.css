@@ -27,8 +27,9 @@ main { max-width: 1500px; margin: 0 auto; padding: 24px; }
 .item-sidebar { max-height: calc(100vh - 126px); overflow-y: auto; }
 .global-theme-manager { padding: 18px; border-bottom: 1px solid var(--line); }
 .global-theme-manager h2 { margin: 6px 0; font-family: var(--serif); font-weight: 400; }
-.homepage-manager { padding: 18px; border-bottom: 1px solid var(--line); }
-.homepage-manager h2 { margin: 6px 0; font-family: var(--serif); font-weight: 400; }
+.homepage-manager { margin: 0; padding: 18px; border: 0; border-bottom: 1px solid var(--line); background: var(--panel); }
+.homepage-manager > summary, .appearance-manager > summary { font-family: var(--serif); font-size: 22px; font-weight: 400; }
+.homepage-manager .manager-content { display: grid; gap: 12px; padding-top: 14px; }
 .homepage-manager p { color: var(--muted); font-size: 11px; line-height: 1.45; }
 .hero-art-options { display: grid; gap: 5px; margin: 10px 0; }
 .appearance-manager { margin: 0; padding: 18px; border: 0; border-bottom: 1px solid var(--line); background: var(--panel); }

@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
-import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260610-shopify-links";
+import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260612-featured-catalogue";
 import { addCartItem, buildCartRequestEmail, canAddToCart, cartQuantity, CART_STORAGE_KEY, normalizeCart, reconcileCart, removeCartItem, updateCartItem } from "./cart-model.js?v=20260611";
 import { HEADER_LOGOS, normalizeAppearance } from "./settings-model.js?v=20260611";
 
@@ -8,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let items = [];
 let collections = [];
-let activeCollection = "all";
+let activeCollection = "featured";
 let globalTheme = DEFAULT_GLOBAL_THEME;
 let homepageSettings = { hero_media_type: "icon", hero_icon_style: "orbit-shop", hero_image_url: "", hero_product_id: "" };
 let appearance = normalizeAppearance();
@@ -123,13 +123,15 @@ function itemCard(item) {
 function renderCollection() {
   const container = document.getElementById("item-grid");
   const filteredItems = filterItemsByCollection(items, activeCollection);
-  const activeName = collections.find((collection) => collection.slug === activeCollection)?.name;
+  const activeName = activeCollection === "featured"
+    ? "Featured"
+    : collections.find((collection) => collection.slug === activeCollection)?.name;
   container.classList.toggle("empty", filteredItems.length === 0);
   container.innerHTML = filteredItems.length
     ? filteredItems.map(itemCard).join("")
     : `<div class="empty-state">
         <span class="kicker">${activeCollection === "all" ? "Nothing currently available" : "This collection is currently empty"}</span>
-        <h2>${activeCollection === "all" ? "There are no garments at the moment." : `No garments in ${escapeHtml(activeName || "this collection")} yet.`}</h2>
+        <h2>${activeCollection === "all" ? "There are no garments at the moment." : activeCollection === "featured" ? "No featured garments currently available." : `No garments in ${escapeHtml(activeName || "this collection")} yet.`}</h2>
         <p>We apologize. Please check back later for the next available garment.</p>
       </div>`;
 }
@@ -137,6 +139,7 @@ function renderCollection() {
 function renderCollectionFilters() {
   const container = document.getElementById("collection-filters");
   container.innerHTML = [
+    { name: "Featured", slug: "featured" },
     { name: "All", slug: "all" },
     ...collections,
   ].map((collection) => `<button type="button" data-collection="${escapeHtml(collection.slug)}" class="${collection.slug === activeCollection ? "active" : ""}">${escapeHtml(collection.name)}</button>`).join("");
@@ -257,7 +260,7 @@ function bindButtons() {
 function showView(id) {
   const next = document.getElementById(id) ? id : "home";
   if (next === "collection") {
-    activeCollection = "all";
+    activeCollection = "featured";
     renderCollectionFilters();
     renderCollection();
     bindButtons();

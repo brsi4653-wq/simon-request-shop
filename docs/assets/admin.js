@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
-import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260610-shopify-links";
+import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260612-featured-catalogue";
 import { normalizeAppearance } from "./settings-model.js?v=20260611";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -354,10 +354,6 @@ async function saveItem(event) {
     const collectionIds = selectedCollectionIds();
     const item = await attachUploads(collectItem());
     if (item.is_featured && !item.is_published) throw new Error("Publish the item before making it featured.");
-    if (item.is_featured) {
-      const { error } = await supabase.from("shop_items").update({ is_featured: false }).eq("is_featured", true);
-      if (error) throw error;
-    }
     const result = id
       ? await supabase.from("shop_items").update(item).eq("id", id).select().single()
       : await supabase.from("shop_items").insert(item).select().single();

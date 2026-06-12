@@ -31,6 +31,21 @@ test("public collection page has filter controls and Nova Scotia language", () =
   assert.match(siteJs, /filterItemsByCollection/);
 });
 
+test("catalogue opens on Featured before All", () => {
+  assert.match(siteJs, /let activeCollection = "featured"/);
+  assert.match(siteJs, /\{ name: "Featured", slug: "featured" \}[\s\S]*\{ name: "All", slug: "all" \}/);
+  assert.match(siteJs, /activeCollection = "featured"/);
+});
+
+test("admin supports multiple catalogue featured garments and keeps homepage controls collapsed", () => {
+  assert.match(adminHtml, /Featured in catalogue/);
+  assert.doesNotMatch(adminHtml, /Featured on homepage/);
+  assert.doesNotMatch(adminJs, /update\(\{ is_featured: false \}\)\.eq\("is_featured", true\)/);
+  assert.match(adminHtml, /<details class="homepage-manager">/);
+  assert.match(adminHtml, /<details class="appearance-manager">/);
+  assert.doesNotMatch(adminHtml, /<details class="appearance-manager" open>/);
+});
+
 test("collection migration creates its tables first and never updates or deletes existing shop items", () => {
   assert.match(migrationStepOne, /create table if not exists public\.shop_collections/i);
   assert.match(migrationStepOne, /to_regclass\('public\.shop_collections'\)/i);

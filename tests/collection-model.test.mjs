@@ -39,12 +39,13 @@ test("normalizeItem preserves collection slugs and ids", () => {
   assert.deepEqual(item.collection_ids, ["one", "two"]);
 });
 
-test("All includes every item while custom collections include assigned items only", () => {
+test("Featured includes selected items, All includes every item, and custom collections include assigned items only", () => {
   const items = [
-    normalizeItem({ title: "Blank", collection_slugs: ["blanks"] }),
+    normalizeItem({ title: "Blank", is_featured: true, collection_slugs: ["blanks"] }),
     normalizeItem({ title: "Hybrid", collection_slugs: ["semi-customizable"] }),
-    normalizeItem({ title: "Unassigned" }),
+    normalizeItem({ title: "Unassigned", is_featured: true }),
   ];
+  assert.deepEqual(filterItemsByCollection(items, "featured").map((item) => item.title), ["Blank", "Unassigned"]);
   assert.equal(filterItemsByCollection(items, "all").length, 3);
   assert.deepEqual(filterItemsByCollection(items, "blanks").map((item) => item.title), ["Blank"]);
 });
