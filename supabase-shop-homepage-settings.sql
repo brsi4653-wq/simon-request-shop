@@ -14,12 +14,15 @@ alter table public.shop_settings
 alter table public.shop_settings
   add column if not exists hero_product_id uuid references public.shop_items(id) on delete set null;
 
+alter table public.shop_settings
+  add column if not exists appearance_config jsonb not null default '{}'::jsonb;
+
 drop view if exists public.public_shop_settings;
 
 create or replace view public.public_shop_settings
 with (security_barrier = true)
 as
-select id, global_theme, hero_media_type, hero_icon_style, hero_image_url, hero_product_id
+select id, global_theme, hero_media_type, hero_icon_style, hero_image_url, hero_product_id, appearance_config
 from public.shop_settings
 where id = 'global';
 

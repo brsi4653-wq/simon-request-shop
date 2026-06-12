@@ -7,7 +7,7 @@
     <title>SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/site.css?v=20260611-homepage-controls" />
+    <link rel="stylesheet" href="assets/site.css?v=20260611-cart-customization" />
   </head>
   <body>
     <header class="site-header">
@@ -17,6 +17,7 @@
       <nav aria-label="Main navigation">
         <button data-view="home" class="active">Home</button>
         <button data-view="collection">Collection</button>
+        <button data-view="cart" class="cart-nav">Cart <span id="cart-count">0</span></button>
       </nav>
     </header>
 
@@ -24,10 +25,10 @@
       <div class="view active" id="home">
         <section class="hero">
           <div class="hero-copy">
-            <span class="kicker">Independent clothing / Designed in Nova Scotia</span>
-            <h1>Designed, made, and shipped.</h1>
-            <p>SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections, selected garments, and small-batch releases.</p>
-            <button class="primary-action" data-view="collection">View collection</button>
+            <span class="kicker" id="home-kicker">Independent clothing / Designed in Nova Scotia</span>
+            <h1 id="home-headline">Designed, made, and shipped.</h1>
+            <p id="home-intro">SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections, selected garments, and small-batch releases.</p>
+            <button class="primary-action" id="home-button" data-view="collection">View collection</button>
           </div>
           <div class="hero-art" id="hero-visual">
             <span class="orbit orbit-one"></span>
@@ -35,7 +36,7 @@
             <img src="images/logos/the-ships-shop-display.png" alt="" />
           </div>
         </section>
-        <section class="service-process">
+        <section class="service-process" id="process-section">
           <div class="process-heading">
             <span class="kicker">The SHIPS catalogue</span>
             <h2>Selected garments. Seasonal releases.</h2>
@@ -50,24 +51,42 @@
 
       <div class="view" id="collection">
         <section class="page-intro">
-          <span class="kicker">Designed in Nova Scotia / Garment catalogue</span>
-          <h1>Browse the collection.</h1>
-          <p>Explore current garments, seasonal releases, and selected pieces from SHIPS.</p>
+          <span class="kicker" id="collection-kicker">Designed in Nova Scotia / Garment catalogue</span>
+          <h1 id="collection-title">Browse the collection.</h1>
+          <p id="collection-intro">Explore current garments, seasonal releases, and selected pieces from SHIPS.</p>
         </section>
         <nav id="collection-filters" class="collection-filters" aria-label="Filter the collection"></nav>
         <section class="item-grid" id="item-grid"></section>
       </div>
 
       <div class="view" id="item-detail"></div>
+
+      <div class="view" id="cart">
+        <section class="page-intro cart-intro">
+          <span class="kicker">Combined garment request</span>
+          <h1>Your cart.</h1>
+          <p>Add request details for each garment, then open one email containing the complete request.</p>
+        </section>
+        <section class="cart-layout">
+          <div id="cart-items" class="cart-items"></div>
+          <aside class="cart-summary">
+            <span class="kicker">Request summary</span>
+            <h2 id="cart-summary-title">No garments yet.</h2>
+            <p>Cart details stay only in this browser. They are not saved to the website.</p>
+            <a id="request-cart" class="primary-action" href="#" aria-disabled="true">Request entire cart</a>
+            <button id="clear-cart" class="text-action" type="button">Clear cart</button>
+          </aside>
+        </section>
+      </div>
     </main>
 
     <footer>
       <span>&copy; <span id="year"></span> SHIPS</span>
-      <span>Designed in Nova Scotia</span>
-      <span>Independent garments and seasonal releases</span>
+      <span id="footer-middle">Designed in Nova Scotia</span>
+      <span id="footer-right">Independent garments and seasonal releases</span>
       <a href="admin.html?v=20260610-shopify-url-warning">Private editor</a>
     </footer>
 
-    <script type="module" src="assets/site.js?v=20260611-homepage-controls"></script>
+    <script type="module" src="assets/site.js?v=20260611-cart-customization"></script>
   </body>
 </html>

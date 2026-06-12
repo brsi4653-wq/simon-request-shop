@@ -1,6 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
 import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260610-shopify-links";
+import { normalizeAppearance } from "./settings-model.js?v=20260611";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const form = document.getElementById("item-form");
@@ -11,6 +12,8 @@ let collections = [];
 let savedAdminUser = null;
 let globalTheme = DEFAULT_GLOBAL_THEME;
 let homepageSettings = { hero_media_type: "icon", hero_icon_style: "orbit-shop", hero_image_url: "", hero_product_id: "" };
+let appearance = normalizeAppearance();
+const appearanceForm = document.getElementById("appearance-form");
 
 const HERO_ART_STYLES = {
   "orbit-shop": "Orbit / Shop Mark",
@@ -59,6 +62,12 @@ function renderControls() {
     '<option value="">Choose a product</option>',
     ...items.filter((item) => item.is_published).map((item) => `<option value="${item.id}" ${item.id === homepageSettings.hero_product_id ? "selected" : ""}>${escapeHtml(item.title)}</option>`),
   ].join("");
+  Object.entries(appearance).forEach(([key, value]) => {
+    const control = appearanceForm.elements[key];
+    if (!control) return;
+    if (control.type === "checkbox") control.checked = Boolean(value);
+    else control.value = value;
+  });
 }
 
 function selectedCollectionIds() {
@@ -201,6 +210,7 @@ async function loadAdminData(preferredItemId = "") {
     hero_image_url: settingResult.data.hero_image_url || "",
     hero_product_id: settingResult.data.hero_product_id || "",
   };
+  if (!settingResult.error && settingResult.data) appearance = normalizeAppearance(settingResult.data.appearance_config);
   const memberships = membershipResult.data || [];
   items = (itemResult.data || []).map((item) => normalizeItem({
     ...item,
@@ -241,6 +251,19 @@ async function saveHomepageSettings() {
   } catch (error) {
     setMessage(error.message || "Homepage cover could not be saved.", true);
   }
+}
+
+async function saveAppearanceSettings() {
+  const values = {};
+  Object.keys(appearance).forEach((key) => {
+    const control = appearanceForm.elements[key];
+    values[key] = control?.type === "checkbox" ? control.checked : control?.value;
+  });
+  const nextAppearance = normalizeAppearance(values);
+  const { error } = await supabase.from("shop_settings").upsert({ id: "global", appearance_config: nextAppearance });
+  if (error) return setMessage(error.message || "Website customization could not be saved.", true);
+  appearance = nextAppearance;
+  setMessage("Website customization saved.");
 }
 
 async function createCollection() {
@@ -414,6 +437,7 @@ document.getElementById("new-item").addEventListener("click", resetForm);
 document.getElementById("new-collection").addEventListener("click", createCollection);
 document.getElementById("save-global-theme").addEventListener("click", saveGlobalTheme);
 document.getElementById("save-homepage-settings").addEventListener("click", saveHomepageSettings);
+document.getElementById("save-appearance-settings").addEventListener("click", saveAppearanceSettings);
 document.getElementById("delete-item").addEventListener("click", deleteItem);
 document.getElementById("duplicate-item").addEventListener("click", duplicateItem);
 document.getElementById("publish-item").addEventListener("click", () => {

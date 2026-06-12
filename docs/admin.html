@@ -7,7 +7,7 @@
     <title>Shop Editor | SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css?v=20260611-homepage-controls" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260611-cart-customization" />
   </head>
   <body>
     <header class="admin-header">
@@ -48,6 +48,54 @@
             <label>Homepage product<select id="hero-product-select"><option value="">Choose a product</option></select></label>
             <button id="save-homepage-settings" class="primary-button" type="button">Save Homepage Cover</button>
           </div>
+          <details class="appearance-manager" open>
+            <summary>Website Customization</summary>
+            <form id="appearance-form">
+              <fieldset>
+                <legend>Homepage Content</legend>
+                <label>Homepage kicker<input name="home_kicker" /></label>
+                <label>Homepage headline<textarea name="home_headline" rows="3"></textarea></label>
+                <label>Homepage introduction<textarea name="home_intro" rows="4"></textarea></label>
+                <label>Homepage button label<input name="home_button_label" /></label>
+                <label class="check-control"><input name="show_process" type="checkbox" /> Show catalogue process section</label>
+              </fieldset>
+              <fieldset>
+                <legend>Homepage Layout</legend>
+                <label>Hero layout<select name="hero_layout"><option value="split">Split</option><option value="centered">Centered</option></select></label>
+                <label>Hero height<select name="hero_height"><option value="compact">Compact</option><option value="standard">Standard</option><option value="tall">Tall</option></select></label>
+                <label>Homepage image fit<select name="hero_image_fit"><option value="cover">Fill frame</option><option value="contain">Show full image</option></select></label>
+              </fieldset>
+              <fieldset>
+                <legend>Header Branding</legend>
+                <label>Header logo<select name="header_logo"><option value="ships-white">SHIPS White</option><option value="ships-black">SHIPS Black</option><option value="ships-tag">SHIPS Tag</option><option value="ships-shop">The SHIPS Shop</option></select></label>
+                <label>Header logo size<select name="header_logo_size"><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option></select></label>
+              </fieldset>
+              <fieldset>
+                <legend>Collection Content</legend>
+                <label>Collection kicker<input name="collection_kicker" /></label>
+                <label>Collection title<input name="collection_title" /></label>
+                <label>Collection introduction<textarea name="collection_intro" rows="3"></textarea></label>
+                <label>Cards per row<select name="card_columns"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+                <label>Card image fit<select name="card_image_fit"><option value="cover">Fill frame</option><option value="contain">Show full image</option></select></label>
+              </fieldset>
+              <fieldset>
+                <legend>Overall Style</legend>
+                <label>Corner style<select name="corner_style"><option value="square">Square</option><option value="soft">Soft</option><option value="rounded">Rounded</option></select></label>
+                <label>Typography<select name="typography"><option value="editorial">Editorial serif</option><option value="modern">Modern sans</option></select></label>
+                <label>Spacing<select name="spacing"><option value="compact">Compact</option><option value="standard">Standard</option><option value="airy">Airy</option></select></label>
+                <label>Motion<select name="motion"><option value="none">None</option><option value="subtle">Subtle</option></select></label>
+              </fieldset>
+              <fieldset>
+                <legend>Footer And Cart Wording</legend>
+                <label>Footer middle text<input name="footer_middle" /></label>
+                <label>Footer right text<input name="footer_right" /></label>
+                <label>Add-to-cart label<input name="add_to_cart_label" /></label>
+                <label>Single request label<input name="request_now_label" /></label>
+                <label>Cart request label<input name="cart_request_label" /></label>
+              </fieldset>
+              <button id="save-appearance-settings" class="primary-button" type="button">Save Website Customization</button>
+            </form>
+          </details>
           <div class="collection-manager-heading">
             <div>
               <span class="eyebrow">Public Filters</span>
@@ -153,6 +201,6 @@
       </section>
     </main>
 
-    <script type="module" src="assets/admin.js?v=20260611-homepage-controls"></script>
+    <script type="module" src="assets/admin.js?v=20260611-cart-customization"></script>
   </body>
 </html>

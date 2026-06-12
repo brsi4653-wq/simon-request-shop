@@ -10,6 +10,7 @@ const resetSql = await readFile(new URL("../supabase-shop-business-reset.sql", i
 const renewSql = await readFile(new URL("../supabase-shop-full-renew.sql", import.meta.url), "utf8");
 const oneLineRenewSql = await readFile(new URL("../RUN-THIS-SHIPS-RENEWAL.sql", import.meta.url), "utf8");
 const shopifyMigrationSql = await readFile(new URL("../supabase-shop-shopify-links.sql", import.meta.url), "utf8").catch(() => "");
+const appearanceMigrationSql = await readFile(new URL("../supabase-shop-appearance-settings.sql", import.meta.url), "utf8").catch(() => "");
 
 test("homepage presents SHIPS as an independent clothing brand", () => {
   assert.match(indexHtml, /Designed, made, and shipped\./);
@@ -140,4 +141,34 @@ test("Shopify availability migration preserves existing garments and exposes pub
   assert.match(shopifyMigrationSql, /request-only/i);
   assert.match(shopifyMigrationSql, /create or replace view public\.public_shop_items/i);
   assert.doesNotMatch(shopifyMigrationSql, /delete from public\.shop_items|drop table public\.shop_items/i);
+});
+
+test("public site exposes a combined-request cart without bypassing availability", () => {
+  assert.match(indexHtml, /data-view="cart"/);
+  assert.match(indexHtml, /id="cart-count"/);
+  assert.match(indexHtml, /id="cart-items"/);
+  assert.match(siteJs, /canAddToCart/);
+  assert.match(siteJs, /buildCartRequestEmail/);
+  assert.match(siteJs, /localStorage/);
+});
+
+test("admin exposes extensive appearance controls", () => {
+  for (const control of [
+    "home_headline",
+    "home_intro",
+    "hero_layout",
+    "header_logo",
+    "card_columns",
+    "card_image_fit",
+    "corner_style",
+    "typography",
+    "motion",
+    "add_to_cart_label",
+  ]) assert.match(adminHtml, new RegExp(`name="${control}"`));
+});
+
+test("appearance migration is additive and never changes garments", () => {
+  assert.match(appearanceMigrationSql, /appearance_config/i);
+  assert.match(appearanceMigrationSql, /public_shop_settings/i);
+  assert.doesNotMatch(appearanceMigrationSql, /delete from public\.shop_items|update public\.shop_items|drop table.*shop_items/i);
 });

@@ -31,6 +31,10 @@ main { max-width: 1500px; margin: 0 auto; padding: 24px; }
 .homepage-manager h2 { margin: 6px 0; font-family: var(--serif); font-weight: 400; }
 .homepage-manager p { color: var(--muted); font-size: 11px; line-height: 1.45; }
 .hero-art-options { display: grid; gap: 5px; margin: 10px 0; }
+.appearance-manager { margin: 0; padding: 18px; border: 0; border-bottom: 1px solid var(--line); background: var(--panel); }
+.appearance-manager > summary { font-family: var(--serif); font-size: 22px; font-weight: 400; }
+#appearance-form { padding: 14px 0 0; gap: 12px; }
+#appearance-form fieldset { display: grid; gap: 10px; padding: 12px; }
 .global-theme-manager p { color: var(--muted); font-size: 12px; line-height: 1.45; }
 .global-theme-options { display: grid; gap: 7px; margin: 14px 0; }
 .sidebar-heading, .collection-manager-heading { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }

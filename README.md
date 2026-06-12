@@ -55,6 +55,12 @@ The public request and purchase email is `purchase@theshipsshop.com`. The privat
 
 Run `supabase-shop-purchase-email.sql` once if the old address was ever typed into saved garment descriptions or request wording. It only replaces that address in saved public garment copy; it does not alter the private admin login.
 
+## Adding The Request Cart And Website Customization
+
+Run `supabase-shop-appearance-settings.sql` once in the Supabase SQL Editor, then upload the updated `docs` folder. This additive migration does not change or delete garments. It adds the extensible website-customization settings used by the private editor.
+
+The request cart is stored only in each visitor's browser. It combines multiple garment requests into one email and does not store customer information in Supabase.
+
 ## Adding Shopify Links And Availability To An Existing Shop
 
 Run `supabase-shop-shopify-links.sql` once in the Supabase SQL Editor before uploading the updated `docs` folder. This additive migration preserves every garment, image, collection, and theme. Existing garments default to **Request Only**, so their current email request buttons continue working until you deliberately change them.
