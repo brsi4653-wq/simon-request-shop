@@ -146,13 +146,10 @@ test("Shopify availability migration preserves existing garments and exposes pub
   assert.doesNotMatch(shopifyMigrationSql, /delete from public\.shop_items|drop table public\.shop_items/i);
 });
 
-test("public site exposes a combined-request cart without bypassing availability", () => {
-  assert.match(indexHtml, /data-view="cart"/);
-  assert.match(indexHtml, /id="cart-count"/);
-  assert.match(indexHtml, /id="cart-items"/);
-  assert.match(siteJs, /canAddToCart/);
-  assert.match(siteJs, /buildCartRequestEmail/);
-  assert.match(siteJs, /localStorage/);
+test("public site uses direct garment actions without exposing the retired cart", () => {
+  assert.doesNotMatch(indexHtml, /data-view="cart"|id="cart-count"|id="cart-items"/);
+  assert.doesNotMatch(siteJs, /canAddToCart|buildCartRequestEmail|data-add-cart|localStorage/);
+  assert.match(siteJs, /getProductAction/);
 });
 
 test("admin exposes extensive appearance controls", () => {
@@ -166,7 +163,7 @@ test("admin exposes extensive appearance controls", () => {
     "corner_style",
     "typography",
     "motion",
-    "add_to_cart_label",
+    "request_now_label",
   ]) assert.match(adminHtml, new RegExp(`name="${control}"`));
 });
 

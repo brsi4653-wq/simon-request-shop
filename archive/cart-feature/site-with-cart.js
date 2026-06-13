@@ -1,6 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
 import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260612-featured-catalogue";
+import { addCartItem, buildCartRequestEmail, canAddToCart, cartQuantity, CART_STORAGE_KEY, normalizeCart, reconcileCart, removeCartItem, updateCartItem } from "./cart-model.js?v=20260611";
 import { normalizeAppearance, resolveHeaderLogo } from "./settings-model.js?v=20260612-readable-logo";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -11,10 +12,28 @@ let activeCollection = "featured";
 let globalTheme = DEFAULT_GLOBAL_THEME;
 let homepageSettings = { hero_media_type: "icon", hero_icon_style: "orbit-shop", hero_image_url: "", hero_product_id: "" };
 let appearance = normalizeAppearance();
+let cart = loadCart();
 const views = [...document.querySelectorAll(".view")];
 const navButtons = [...document.querySelectorAll("[data-view]")];
 const brandLogo = document.getElementById("brand-logo");
 const heroVisual = document.getElementById("hero-visual");
+
+function loadCart() {
+  try {
+    return normalizeCart(JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]"));
+  } catch {
+    return [];
+  }
+}
+
+function saveCart() {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  } catch {
+    // The cart still works for this page when browser storage is unavailable.
+  }
+  renderCart();
+}
 
 function escapeHtml(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
@@ -136,9 +155,13 @@ function renderDetail(item) {
   item = toPublicGarmentCopy(item);
   applyTheme(resolveProductTheme(item.theme, globalTheme));
   const action = getProductAction(item, ORDER_EMAIL);
+  const cartAllowed = canAddToCart(item);
   const primaryAction = action.disabled
     ? `<button class="primary-action request-action" type="button" disabled>${escapeHtml(action.label)}</button>`
     : `<a class="primary-action request-action" href="${escapeHtml(action.href)}">${escapeHtml(action.type === "email" ? appearance.request_now_label : action.label)}</a>`;
+  const cartAction = cartAllowed
+    ? `<button class="secondary-action add-cart-action" type="button" data-add-cart="${escapeHtml(item.id || item.slug)}">${escapeHtml(appearance.add_to_cart_label)}</button>`
+    : "";
   const secondaryAction = action.disabled
     ? `<span class="availability-note">${escapeHtml(action.label)}</span>`
     : `<a class="text-action" href="${escapeHtml(action.href)}">${action.type === "shopify" ? "Buy this garment" : "Inquire about this garment"} <span>&nearr;</span></a>`;
@@ -154,7 +177,7 @@ function renderDetail(item) {
       <p class="summary">${escapeHtml(item.summary)}</p>
       <p>${escapeHtml(item.description)}</p>
       <div class="price-note">${escapeHtml(item.price_note)}</div>
-      <div class="detail-actions">${primaryAction}</div>
+      <div class="detail-actions">${primaryAction}${cartAction}</div>
       <p class="fine-print">${escapeHtml(item.production_note)}</p>
     </div>
   </section>
@@ -175,6 +198,59 @@ function renderDetail(item) {
     document.getElementById("gallery-main-image").src = button.dataset.galleryImage;
     document.querySelectorAll("[data-gallery-image]").forEach((entry) => entry.classList.toggle("active", entry === button));
   }));
+  bindCartButtons();
+}
+
+function renderCart() {
+  const count = cartQuantity(cart);
+  document.getElementById("cart-count").textContent = count;
+  document.getElementById("cart-summary-title").textContent = count ? `${count} garment${count === 1 ? "" : "s"} in your request.` : "No garments yet.";
+  const requestLink = document.getElementById("request-cart");
+  requestLink.textContent = appearance.cart_request_label;
+  requestLink.href = count ? buildCartRequestEmail(cart, ORDER_EMAIL).href : "#";
+  requestLink.setAttribute("aria-disabled", count ? "false" : "true");
+  document.getElementById("cart-items").innerHTML = cart.length ? cart.map((entry) => {
+    const item = items.find((candidate) => String(candidate.id || candidate.slug) === entry.id);
+    const sizes = item?.sizes || [];
+    const colors = item?.colors || [];
+    return `<article class="cart-entry" data-cart-id="${escapeHtml(entry.id)}">
+      <div class="cart-entry-image">${entry.image ? `<img src="${escapeHtml(entry.image)}" alt="${escapeHtml(entry.title)}" />` : imagePlaceholder(entry.title)}</div>
+      <div class="cart-entry-copy">
+        <span class="kicker">Request item</span>
+        <h2>${escapeHtml(entry.title)}</h2>
+        <div class="cart-fields">
+          <label>Quantity<input data-cart-field="quantity" type="number" min="1" value="${entry.quantity}" /></label>
+          <label>Preferred size${sizes.length ? `<select data-cart-field="size"><option value="">Choose size</option>${sizes.map((size) => `<option ${size === entry.size ? "selected" : ""}>${escapeHtml(size)}</option>`).join("")}</select>` : `<input data-cart-field="size" value="${escapeHtml(entry.size)}" />`}</label>
+          <label>Preferred color${colors.length ? `<select data-cart-field="color"><option value="">Choose color</option>${colors.map((color) => `<option ${color === entry.color ? "selected" : ""}>${escapeHtml(color)}</option>`).join("")}</select>` : `<input data-cart-field="color" value="${escapeHtml(entry.color)}" />`}</label>
+          <label class="cart-notes">Notes<textarea data-cart-field="notes" rows="3">${escapeHtml(entry.notes)}</textarea></label>
+        </div>
+        <button class="text-action" type="button" data-remove-cart="${escapeHtml(entry.id)}">Remove</button>
+      </div>
+    </article>`;
+  }).join("") : `<div class="empty-state"><span class="kicker">Combined garment request</span><h2>Your cart is empty.</h2><p>Add garments from their product pages to request several pieces in one email.</p></div>`;
+
+  document.querySelectorAll("[data-cart-id]").forEach((entry) => {
+    entry.querySelectorAll("[data-cart-field]").forEach((field) => field.addEventListener("change", () => {
+      const values = {};
+      entry.querySelectorAll("[data-cart-field]").forEach((input) => values[input.dataset.cartField] = input.value);
+      cart = updateCartItem(cart, entry.dataset.cartId, values);
+      saveCart();
+    }));
+  });
+  document.querySelectorAll("[data-remove-cart]").forEach((button) => button.addEventListener("click", () => {
+    cart = removeCartItem(cart, button.dataset.removeCart);
+    saveCart();
+  }));
+}
+
+function bindCartButtons() {
+  document.querySelectorAll("[data-add-cart]").forEach((button) => button.addEventListener("click", () => {
+    const item = items.find((entry) => String(entry.id || entry.slug) === button.dataset.addCart);
+    if (!item || !canAddToCart(item)) return;
+    cart = addCartItem(cart, item);
+    saveCart();
+    button.textContent = "Added";
+  }));
 }
 
 function bindButtons() {
@@ -189,6 +265,7 @@ function showView(id) {
     renderCollection();
     bindButtons();
   }
+  if (next === "cart") renderCart();
   applyTheme(globalTheme);
   views.forEach((view) => view.classList.toggle("active", view.id === next));
   navButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === next));
@@ -213,6 +290,8 @@ async function loadItems() {
     supabase.from("public_shop_settings").select("*").eq("id", "global").maybeSingle(),
   ]);
   if (!itemResult.error) items = normalizeItems(itemResult.data);
+  cart = reconcileCart(cart, items);
+  saveCart();
   if (!collectionResult.error) collections = normalizeCollections(collectionResult.data);
   if (!settingResult.error && getTheme(settingResult.data?.global_theme)) globalTheme = settingResult.data?.global_theme || DEFAULT_GLOBAL_THEME;
   if (!settingResult.error && settingResult.data) homepageSettings = {
@@ -228,18 +307,24 @@ async function loadItems() {
   renderCollectionFilters();
   renderCollection();
   bindButtons();
+  renderCart();
   const hash = location.hash.slice(1);
   if (hash.startsWith("item/")) showItem(hash.slice(5));
 }
 
 navButtons.forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 document.getElementById("year").textContent = new Date().getFullYear();
+document.getElementById("clear-cart").addEventListener("click", () => {
+  cart = [];
+  saveCart();
+});
 applyTheme(globalTheme);
 applyAppearance();
 renderHeroVisual();
 renderCollectionFilters();
 renderCollection();
 bindButtons();
+renderCart();
 const initialHash = location.hash.slice(1);
 if (initialHash.startsWith("item/")) showItem(initialHash.slice(5));
 else showView(initialHash || "home");

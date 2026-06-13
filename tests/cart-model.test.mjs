@@ -8,7 +8,7 @@ import {
   normalizeCart,
   reconcileCart,
   updateCartItem,
-} from "../docs/assets/cart-model.js";
+} from "../archive/cart-feature/cart-model.js";
 
 test("only available and request-only garments can enter the request cart", () => {
   assert.equal(canAddToCart({ availability_status: "available" }), true);

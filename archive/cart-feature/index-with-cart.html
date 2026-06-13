@@ -7,7 +7,7 @@
     <title>SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/site.css?v=20260613-direct-actions" />
+    <link rel="stylesheet" href="assets/site.css?v=20260611-cart-customization" />
   </head>
   <body>
     <header class="site-header">
@@ -17,6 +17,7 @@
       <nav aria-label="Main navigation">
         <button data-view="home" class="active">Home</button>
         <button data-view="collection">Collection</button>
+        <button data-view="cart" class="cart-nav">Cart <span id="cart-count">0</span></button>
       </nav>
     </header>
 
@@ -60,6 +61,23 @@
 
       <div class="view" id="item-detail"></div>
 
+      <div class="view" id="cart">
+        <section class="page-intro cart-intro">
+          <span class="kicker">Combined garment request</span>
+          <h1>Your cart.</h1>
+          <p>Add request details for each garment, then open one email containing the complete request.</p>
+        </section>
+        <section class="cart-layout">
+          <div id="cart-items" class="cart-items"></div>
+          <aside class="cart-summary">
+            <span class="kicker">Request summary</span>
+            <h2 id="cart-summary-title">No garments yet.</h2>
+            <p>Cart details stay only in this browser. They are not saved to the website.</p>
+            <a id="request-cart" class="primary-action" href="#" aria-disabled="true">Request entire cart</a>
+            <button id="clear-cart" class="text-action" type="button">Clear cart</button>
+          </aside>
+        </section>
+      </div>
     </main>
 
     <footer>
@@ -69,6 +87,6 @@
       <a href="admin.html?v=20260610-shopify-url-warning">Private editor</a>
     </footer>
 
-  <script type="module" src="assets/site.js?v=20260613-direct-actions"></script>
+  <script type="module" src="assets/site.js?v=20260612-readable-logo"></script>
   </body>
 </html>
