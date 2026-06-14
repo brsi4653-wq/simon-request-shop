@@ -8,7 +8,7 @@ test("appearance settings provide complete safe defaults", () => {
   assert.equal(settings.home_headline, DEFAULT_APPEARANCE.home_headline);
   assert.equal(settings.card_columns, "4");
   assert.equal(settings.header_logo, "ships-white");
-  assert.equal(settings.request_now_label, "Request now");
+  assert.equal(settings.add_to_cart_label, "Add to cart");
 });
 
 test("appearance settings preserve valid choices and reject unsupported choices", () => {

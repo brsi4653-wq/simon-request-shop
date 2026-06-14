@@ -20,7 +20,9 @@ export const DEFAULT_APPEARANCE = {
   motion: "subtle",
   footer_middle: "Designed in Nova Scotia",
   footer_right: "Independent garments and seasonal releases",
+  add_to_cart_label: "Add to cart",
   request_now_label: "Request now",
+  cart_request_label: "Request entire cart",
 };
 
 const CHOICES = {

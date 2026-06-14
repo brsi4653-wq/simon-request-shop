@@ -12,11 +12,11 @@ const oneLineRenewSql = await readFile(new URL("../RUN-THIS-SHIPS-RENEWAL.sql", 
 const shopifyMigrationSql = await readFile(new URL("../supabase-shop-shopify-links.sql", import.meta.url), "utf8").catch(() => "");
 const appearanceMigrationSql = await readFile(new URL("../supabase-shop-appearance-settings.sql", import.meta.url), "utf8").catch(() => "");
 
-test("homepage presents SHIPS as an independent clothing brand", () => {
-  assert.match(indexHtml, /Designed, made, and shipped\./);
-  assert.match(indexHtml, /independent clothing project based in Nova Scotia/i);
-  assert.match(indexHtml, /View collection/);
-  assert.doesNotMatch(indexHtml, /Browse garments/);
+test("prototype opens directly into the Nova Scotia collection", () => {
+  assert.match(indexHtml, /Designed in Nova Scotia/i);
+  assert.match(indexHtml, /id="collection" class="view active"/);
+  assert.match(indexHtml, /class="product-wheel"/);
+  assert.doesNotMatch(indexHtml, /id="home"|data-view="home"/);
   assert.doesNotMatch(indexHtml, /Your idea|Send us your artwork|Send your idea|We design and ship it|Choose a garment/i);
 });
 
@@ -38,15 +38,15 @@ test("purchase email cleanup updates saved garment copy without changing admin a
   assert.doesNotMatch(migration, /delete from public\.shop_items/);
 });
 
-test("admin exposes homepage cover and six hero-art choices", async () => {
+test("admin retains optional future cover controls without adding a public homepage", async () => {
   const adminJs = await readFile(new URL("../docs/assets/admin.js", import.meta.url), "utf8");
-  assert.match(adminHtml, /Homepage Cover/);
+  assert.match(adminHtml, /Future Cover Options/);
   assert.match(adminHtml, /name="hero_media_type"/);
   assert.match(adminHtml, /id="hero-image-file"/);
   assert.match(adminHtml, /id="hero-product-select"/);
   assert.match(adminJs, /HERO_ART_STYLES/);
   assert.match(adminJs, /saveHomepageSettings/);
-  assert.match(siteJs, /renderHeroVisual/);
+  assert.doesNotMatch(indexHtml, /id="home"|data-view="home"/);
 });
 
 test("image-free listings use a deliberate placeholder instead of the demo product image", () => {
@@ -72,8 +72,8 @@ test("item modes use brand-first labels while preserving database values", () =>
 });
 
 test("product pages keep custom printing secondary", () => {
-  assert.match(siteJs, /Custom print requests may be available for select garments/);
   assert.doesNotMatch(siteJs, /Start with an idea|Send artwork|prepares the design|Start your design request/i);
+  assert.match(siteJs, /Garment details/);
 });
 
 test("catalogue reset deletes old items, excludes McLaren, clears images, and creates the requested collections", () => {
@@ -110,8 +110,7 @@ test("run-this renewal cannot be accidentally executed as a selected middle line
 });
 
 test("custom domain and GitHub Pages paths remain safe", async () => {
-  const cname = await readFile(new URL("../docs/CNAME", import.meta.url), "utf8");
-  assert.equal(cname.trim(), "theshipsshop.com");
+  await assert.rejects(readFile(new URL("../docs/CNAME", import.meta.url), "utf8"));
 
   const publicFiles = [indexHtml, adminHtml, itemModel, siteJs].join("\n");
   assert.doesNotMatch(publicFiles, /github\.io|\/simon-request-shop\//i);
@@ -146,10 +145,13 @@ test("Shopify availability migration preserves existing garments and exposes pub
   assert.doesNotMatch(shopifyMigrationSql, /delete from public\.shop_items|drop table public\.shop_items/i);
 });
 
-test("public site uses direct garment actions without exposing the retired cart", () => {
-  assert.doesNotMatch(indexHtml, /data-view="cart"|id="cart-count"|id="cart-items"/);
-  assert.doesNotMatch(siteJs, /canAddToCart|buildCartRequestEmail|data-add-cart|localStorage/);
-  assert.match(siteJs, /getProductAction/);
+test("public site exposes a combined-request cart without bypassing availability", () => {
+  assert.match(indexHtml, /data-view="cart"/);
+  assert.match(indexHtml, /id="cart-count"/);
+  assert.match(indexHtml, /id="cart-items"/);
+  assert.match(siteJs, /canAddToCart/);
+  assert.match(siteJs, /buildCartRequestEmail/);
+  assert.match(siteJs, /localStorage/);
 });
 
 test("admin exposes extensive appearance controls", () => {
@@ -163,7 +165,7 @@ test("admin exposes extensive appearance controls", () => {
     "corner_style",
     "typography",
     "motion",
-    "request_now_label",
+    "add_to_cart_label",
   ]) assert.match(adminHtml, new RegExp(`name="${control}"`));
 });
 

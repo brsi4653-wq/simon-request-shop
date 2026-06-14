@@ -25,31 +25,35 @@ test("product themes inherit global unless explicitly selected", () => {
   assert.equal(resolveProductTheme("red", "blue"), "red");
 });
 
-test("collection cards use the global palette instead of product themes", () => {
+test("prototype wheel uses its own visual system instead of product theme variables", () => {
   assert.doesNotMatch(siteJs, /--card-accent:/);
   assert.doesNotMatch(siteJs, /--card-ink:/);
-  assert.match(siteCss, /\.item-card\s*\{[^}]*background:\s*var\(--soft/s);
+  assert.match(siteCss, /--baby-blue:\s*#b9dcf4/);
+  assert.doesNotMatch(siteCss, /gradient\(/);
 });
 
-test("collection card text uses global theme colors", () => {
-  assert.match(siteCss, /\.item-card\s*\{[^}]*color:\s*var\(--ink\)/s);
-  assert.match(siteCss, /\.item-card p\s*\{[^}]*color:\s*var\(--muted\)/s);
-  assert.match(siteCss, /\.item-card \.kicker\s*\{\s*color:\s*var\(--muted\)/);
-  assert.match(siteCss, /\.item-card \.text-action\s*\{[^}]*color:\s*var\(--ink\)/s);
+test("prototype wheel text uses readable prototype colors", () => {
+  assert.match(siteCss, /\.active-product-copy p\s*\{[^}]*color:\s*var\(--muted\)/s);
+  assert.match(siteCss, /\.kicker\s*\{[^}]*color:\s*var\(--muted\)/s);
+  assert.match(siteCss, /\.text-action\s*\{[^}]*color:\s*var\(--navy\)/s);
 });
 
 test("collection cards stay aligned instead of using a staggered offset", () => {
   assert.doesNotMatch(siteCss, /\.item-card:nth-child\([^)]*\)\s*\{\s*transform:\s*translateY/);
 });
 
-test("collection uses a four-column product grid on wide screens", () => {
-  assert.match(siteCss, /\.item-grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/s);
+test("collection uses a centered stacked product deck", () => {
+  assert.match(siteCss, /\.product-deck\s*\{[^}]*place-items:\s*center/s);
+  assert.match(siteCss, /\.deck-card\s*\{[^}]*position:\s*absolute/s);
+  assert.match(siteCss, /\.deck-card\.is-active\s*\{[^}]*clip-path:\s*inset\(0 0 0 0\)/s);
+  assert.doesNotMatch(siteCss, /\.deck-card\.is-(?:previous|next)\s*\{[^}]*clip-path:/s);
+  assert.doesNotMatch(siteCss, /scroll-snap-type/);
 });
 
-test("collection images use a stable square area and cards cannot overflow their columns", () => {
-  assert.match(siteCss, /\.item-card\s*\{[^}]*min-width:\s*0/s);
-  assert.match(siteCss, /\.item-image\s*\{[^}]*aspect-ratio:\s*1\s*\/\s*1/s);
-  assert.match(siteCss, /\.item-card h2\s*\{[^}]*overflow-wrap:\s*anywhere/s);
+test("collection images use a stable deck frame and cards cannot overflow", () => {
+  assert.match(siteCss, /\.product-wheel\s*\{[^}]*position:\s*relative/s);
+  assert.match(siteCss, /\.deck-image\s*\{[^}]*width:\s*100%[^}]*height:\s*100%/s);
+  assert.match(siteCss, /\.deck-image\s*\{[^}]*overflow:\s*hidden/s);
 });
 
 test("public page version-pins the paired theme assets", () => {
@@ -57,18 +61,17 @@ test("public page version-pins the paired theme assets", () => {
   assert.match(indexHtml, /assets\/site\.js\?v=[^"]+/);
 });
 
-test("public site loads the global theme setting", () => {
+test("public site loads isolated prototype settings", () => {
   assert.match(siteJs, /public_shop_settings/);
-  assert.match(siteJs, /global_theme/);
-  assert.match(siteJs, /resolveProductTheme/);
-  assert.match(siteJs, /resolveHeaderLogo\(theme\.logo, appearance\.header_logo\)/);
+  assert.match(siteJs, /eq\("id", "prototype"\)/);
 });
 
-test("admin exposes and saves the global theme separately from product themes", () => {
-  assert.match(adminHtml, /Global Website Theme/);
+test("admin exposes and saves the prototype theme separately from product themes", () => {
+  assert.match(adminHtml, /Prototype Theme/);
   assert.match(adminHtml, /id="global-theme-options"/);
   assert.match(adminJs, /Use Global Theme/);
   assert.match(adminJs, /shop_settings/);
+  assert.match(adminJs, /id: "prototype"/);
   assert.match(adminJs, /saveGlobalTheme/);
 });
 
@@ -94,9 +97,8 @@ test("homepage settings migration is additive and supports icon image and produc
   assert.doesNotMatch(homepageSql, /drop table public\.shop_items|delete from public\.shop_items/i);
 });
 
-test("collection thumbnails fill their square frame without stretching", () => {
-  assert.match(siteCss, /\.item-image img\s*\{[^}]*object-fit:\s*cover/s);
-  assert.match(siteCss, /\.item-image img\s*\{[^}]*object-position:\s*center/s);
+test("collection wheel images show the full garment without stretching", () => {
+  assert.match(siteCss, /\.deck-image img\s*\{[^}]*object-fit:\s*contain/s);
 });
 
 test("every theme has readable main and muted card text", () => {

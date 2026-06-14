@@ -196,7 +196,7 @@ async function loadAdminData(preferredItemId = "") {
     supabase.from("shop_collections").select("*").order("sort_order").order("name"),
     supabase.from("shop_items").select("*").order("updated_at", { ascending: false }),
     supabase.from("shop_item_collections").select("item_id, collection_id"),
-    supabase.from("shop_settings").select("*").eq("id", "global").maybeSingle(),
+    supabase.from("shop_settings").select("*").eq("id", "prototype").maybeSingle(),
   ]);
   if (collectionResult.error || membershipResult.error) {
     return setMessage("Collections are not ready yet. Run supabase-shop-collections-step-1.sql, then supabase-shop-collections-step-2.sql in Supabase.", true);
@@ -225,19 +225,19 @@ async function loadAdminData(preferredItemId = "") {
 
 async function saveGlobalTheme() {
   const selected = document.querySelector('input[name="global_theme"]:checked')?.value || DEFAULT_GLOBAL_THEME;
-  const { error } = await supabase.from("shop_settings").upsert({ id: "global", global_theme: selected });
+  const { error } = await supabase.from("shop_settings").upsert({ id: "prototype", global_theme: selected });
   if (error) return setMessage(error.message, true);
   globalTheme = selected;
-  setMessage(`Global website theme changed to ${THEMES[selected].name}.`);
+  setMessage(`Prototype theme changed to ${THEMES[selected].name}.`);
 }
 
 async function saveHomepageSettings() {
   try {
     let heroImageUrl = document.getElementById("hero-image-url").value.trim();
     const file = document.getElementById("hero-image-file").files[0];
-    if (file) heroImageUrl = await uploadFile(file, "homepage");
+    if (file) heroImageUrl = await uploadFile(file, "prototype-cover");
     const settings = {
-      id: "global",
+      id: "prototype",
       hero_media_type: document.getElementById("hero-media-type").value,
       hero_icon_style: document.querySelector('input[name="hero_icon_style"]:checked')?.value || "orbit-shop",
       hero_image_url: heroImageUrl,
@@ -247,9 +247,9 @@ async function saveHomepageSettings() {
     if (error) throw error;
     homepageSettings = { ...settings, hero_product_id: settings.hero_product_id || "" };
     document.getElementById("hero-image-url").value = heroImageUrl;
-    setMessage("Homepage cover saved.");
+    setMessage("Prototype cover saved.");
   } catch (error) {
-    setMessage(error.message || "Homepage cover could not be saved.", true);
+    setMessage(error.message || "Prototype cover could not be saved.", true);
   }
 }
 
@@ -260,7 +260,7 @@ async function saveAppearanceSettings() {
     values[key] = control?.type === "checkbox" ? control.checked : control?.value;
   });
   const nextAppearance = normalizeAppearance(values);
-  const { error } = await supabase.from("shop_settings").upsert({ id: "global", appearance_config: nextAppearance });
+  const { error } = await supabase.from("shop_settings").upsert({ id: "prototype", appearance_config: nextAppearance });
   if (error) return setMessage(error.message || "Website customization could not be saved.", true);
   appearance = nextAppearance;
   setMessage("Website customization saved.");

@@ -31,22 +31,22 @@
       <section id="admin-app" hidden>
         <aside class="item-sidebar">
           <div class="global-theme-manager">
-            <span class="eyebrow">Website Appearance</span>
-            <h2>Global Website Theme</h2>
-            <p>Controls the homepage, collection, navigation, cards, and footer.</p>
+            <span class="eyebrow">Prototype Appearance</span>
+            <h2>Prototype Theme</h2>
+            <p>Controls this future storefront only. Garments and collections remain shared with the live shop.</p>
             <div id="global-theme-options" class="global-theme-options"></div>
-            <button id="save-global-theme" class="primary-button" type="button">Save Global Theme</button>
+            <button id="save-global-theme" class="primary-button" type="button">Save Prototype Theme</button>
           </div>
           <details class="homepage-manager">
-            <summary>Homepage Cover</summary>
+            <summary>Future Cover Options</summary>
             <div class="manager-content">
-              <p>Show a SHIPS icon, an uploaded image, or a published product beside the homepage headline.</p>
+              <p>Reserved prototype cover controls. The current opening screen goes directly to the collection wheel.</p>
               <label>Cover type<select name="hero_media_type" id="hero-media-type"><option value="icon">Icon</option><option value="image">Uploaded image</option><option value="product">Product</option></select></label>
               <div id="hero-art-options" class="hero-art-options"></div>
-              <label>Homepage image URL<input id="hero-image-url" type="url" /></label>
-              <label>Upload homepage image<input id="hero-image-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
-              <label>Homepage product<select id="hero-product-select"><option value="">Choose a product</option></select></label>
-              <button id="save-homepage-settings" class="primary-button" type="button">Save Homepage Cover</button>
+              <label>Future cover image URL<input id="hero-image-url" type="url" /></label>
+              <label>Upload future cover image<input id="hero-image-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+              <label>Future cover product<select id="hero-product-select"><option value="">Choose a product</option></select></label>
+              <button id="save-homepage-settings" class="primary-button" type="button">Save Future Cover Options</button>
             </div>
           </details>
           <details class="appearance-manager">
@@ -87,10 +87,12 @@
                 <label>Motion<select name="motion"><option value="none">None</option><option value="subtle">Subtle</option></select></label>
               </fieldset>
               <fieldset>
-                <legend>Footer And Request Wording</legend>
+                <legend>Footer And Cart Wording</legend>
                 <label>Footer middle text<input name="footer_middle" /></label>
                 <label>Footer right text<input name="footer_right" /></label>
+                <label>Add-to-cart label<input name="add_to_cart_label" /></label>
                 <label>Single request label<input name="request_now_label" /></label>
+                <label>Cart request label<input name="cart_request_label" /></label>
               </fieldset>
               <button id="save-appearance-settings" class="primary-button" type="button">Save Website Customization</button>
             </form>
@@ -200,6 +202,6 @@
       </section>
     </main>
 
-  <script type="module" src="assets/admin.js?v=20260612-readable-logo"></script>
+  <script type="module" src="assets/admin.js?v=20260612-prototype-settings"></script>
   </body>
 </html>

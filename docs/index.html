@@ -3,72 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections and selected garments." />
-    <title>SHIPS</title>
+    <meta name="description" content="SHIPS garments and collections." />
+    <title>SHIPS / Future Collection</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/site.css?v=20260613-direct-actions" />
+    <link rel="stylesheet" href="assets/site.css?v=20260613-stacked-behind-2" />
   </head>
   <body>
     <header class="site-header">
-      <button class="brand" data-view="home" aria-label="Go to home">
-        <img id="brand-logo" src="images/logos/ships-main-white-display.png" alt="SHIPS" />
+      <button class="brand" data-view="collection" aria-label="Open collection">
+        <img src="images/logos/ships-main-black-display.png" alt="SHIPS" />
       </button>
       <nav aria-label="Main navigation">
-        <button data-view="home" class="active">Home</button>
-        <button data-view="collection">Collection</button>
+        <button data-view="collection" class="active">Collection</button>
+        <button data-view="cart" class="cart-nav">Cart <span id="cart-count">0</span></button>
       </nav>
     </header>
 
     <main>
-      <div class="view active" id="home">
-        <section class="hero">
-          <div class="hero-copy">
-            <span class="kicker" id="home-kicker">Independent clothing / Designed in Nova Scotia</span>
-            <h1 id="home-headline">Designed, made, and shipped.</h1>
-            <p id="home-intro">SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections, selected garments, and small-batch releases.</p>
-            <button class="primary-action" id="home-button" data-view="collection">View collection</button>
+      <div id="collection" class="view active">
+        <section class="collection-shell">
+          <div class="collection-meta">
+            <span class="kicker">Designed in Nova Scotia</span>
+            <span id="wheel-position">00 / 00</span>
           </div>
-          <div class="hero-art" id="hero-visual">
-            <span class="orbit orbit-one"></span>
-            <span class="orbit orbit-two"></span>
-            <img src="images/logos/the-ships-shop-display.png" alt="" />
-          </div>
-        </section>
-        <section class="service-process" id="process-section">
-          <div class="process-heading">
-            <span class="kicker">The SHIPS catalogue</span>
-            <h2>Selected garments. Seasonal releases.</h2>
-          </div>
-          <div class="process-steps">
-            <article><span>01</span><h3>Seasonal collections</h3><p>Focused releases shaped around a clear material, colour, or garment direction.</p></article>
-            <article><span>02</span><h3>Selected garments</h3><p>Pieces chosen for their fit, finish, and place within the SHIPS catalogue.</p></article>
-            <article><span>03</span><h3>Designed in Nova Scotia</h3><p>An independent clothing project developed in Nova Scotia and produced individually.</p></article>
+          <nav id="collection-filters" class="collection-filters" aria-label="Filter the collection"></nav>
+          <section class="product-deck" aria-label="Products">
+            <div class="product-wheel" id="product-wheel"></div>
+            <div class="deck-controls" aria-label="Product navigation">
+              <button type="button" data-deck-step="-1" aria-label="Previous garment">&larr;</button>
+              <span>Scroll / swipe</span>
+              <button type="button" data-deck-step="1" aria-label="Next garment">&rarr;</button>
+            </div>
+          </section>
+          <div class="active-product-copy" id="active-product-copy">
+            <span class="kicker">Current selection</span>
+            <h1>Select a garment</h1>
+            <p>Scroll once to move through the collection.</p>
           </div>
         </section>
       </div>
 
-      <div class="view" id="collection">
-        <section class="page-intro">
-          <span class="kicker" id="collection-kicker">Designed in Nova Scotia / Garment catalogue</span>
-          <h1 id="collection-title">Browse the collection.</h1>
-          <p id="collection-intro">Explore current garments, seasonal releases, and selected pieces from SHIPS.</p>
+      <div id="item-detail" class="view"></div>
+
+      <div id="cart" class="view">
+        <section class="cart-page">
+          <div class="cart-heading">
+            <span class="kicker">Combined garment request</span>
+            <h1>Your cart.</h1>
+            <p>Complete the details for each garment, then request everything in one email.</p>
+          </div>
+          <div class="cart-layout">
+            <div id="cart-items" class="cart-items"></div>
+            <aside class="cart-summary">
+              <span class="kicker">Request summary</span>
+              <h2 id="cart-summary-title">No garments yet.</h2>
+              <p>Cart details stay only in this browser.</p>
+              <a id="request-cart" class="primary-action" href="#" aria-disabled="true">Request entire cart</a>
+              <button id="clear-cart" class="text-action" type="button">Clear cart</button>
+            </aside>
+          </div>
         </section>
-        <nav id="collection-filters" class="collection-filters" aria-label="Filter the collection"></nav>
-        <section class="item-grid" id="item-grid"></section>
       </div>
-
-      <div class="view" id="item-detail"></div>
-
     </main>
 
     <footer>
       <span>&copy; <span id="year"></span> SHIPS</span>
-      <span id="footer-middle">Designed in Nova Scotia</span>
-      <span id="footer-right">Independent garments and seasonal releases</span>
-      <a href="admin.html?v=20260610-shopify-url-warning">Private editor</a>
+      <span>Future storefront prototype</span>
+      <a href="admin.html">Private editor</a>
     </footer>
 
-  <script type="module" src="assets/site.js?v=20260613-direct-actions"></script>
+    <script type="module" src="assets/site.js?v=20260613-stacked-behind-2"></script>
   </body>
 </html>
