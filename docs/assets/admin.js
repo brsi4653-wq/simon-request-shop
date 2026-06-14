@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
-import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260612-featured-catalogue";
+import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260614-early-access";
 import { normalizeAppearance } from "./settings-model.js?v=20260612-readable-logo";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -125,6 +125,8 @@ function collectItem() {
     request_intro: formValue("request_intro"),
     shopify_product_url: formValue("shopify_product_url"),
     availability_status: form.elements.availability_status.value,
+    early_access_enabled: form.elements.early_access_enabled.checked,
+    early_access_code: formValue("early_access_code"),
     theme: form.elements.theme.value,
     is_published: form.elements.is_published.checked,
     is_featured: form.elements.is_featured.checked,
@@ -179,9 +181,9 @@ function renderPreview() {
   const email = buildRequestEmail(item, ORDER_EMAIL);
   const action = getProductAction(item, ORDER_EMAIL);
   const missingShopifyUrl = item.availability_status === "available" && !item.shopify_product_url;
-  const actionDetails = action.type === "email"
+    const actionDetails = action.type === "email"
     ? `<pre>${email.body}</pre>`
-    : `<p>${action.type === "shopify" ? escapeHtml(action.href) : "The public action button is disabled."}</p>`;
+    : `<p>${action.type === "shopify" ? escapeHtml(action.href) : action.type === "early-access" ? "Visitors must enter the private early-access code." : "The public action button is disabled."}</p>`;
   document.getElementById("editor-preview").innerHTML = `${item.main_image_url ? `<img src="${item.main_image_url}" alt="" />` : "<p>No image yet.</p>"}
     <h3>${item.title}</h3>
     <p>${ITEM_MODES[item.item_mode].name} / Theme: ${theme.name}</p>
@@ -196,7 +198,7 @@ async function loadAdminData(preferredItemId = "") {
     supabase.from("shop_collections").select("*").order("sort_order").order("name"),
     supabase.from("shop_items").select("*").order("updated_at", { ascending: false }),
     supabase.from("shop_item_collections").select("item_id, collection_id"),
-    supabase.from("shop_settings").select("*").eq("id", "prototype").maybeSingle(),
+    supabase.from("shop_settings").select("*").eq("id", "global").maybeSingle(),
   ]);
   if (collectionResult.error || membershipResult.error) {
     return setMessage("Collections are not ready yet. Run supabase-shop-collections-step-1.sql, then supabase-shop-collections-step-2.sql in Supabase.", true);
@@ -225,19 +227,19 @@ async function loadAdminData(preferredItemId = "") {
 
 async function saveGlobalTheme() {
   const selected = document.querySelector('input[name="global_theme"]:checked')?.value || DEFAULT_GLOBAL_THEME;
-  const { error } = await supabase.from("shop_settings").upsert({ id: "prototype", global_theme: selected });
+  const { error } = await supabase.from("shop_settings").upsert({ id: "global", global_theme: selected });
   if (error) return setMessage(error.message, true);
   globalTheme = selected;
-  setMessage(`Prototype theme changed to ${THEMES[selected].name}.`);
+  setMessage(`Global website theme changed to ${THEMES[selected].name}.`);
 }
 
 async function saveHomepageSettings() {
   try {
     let heroImageUrl = document.getElementById("hero-image-url").value.trim();
     const file = document.getElementById("hero-image-file").files[0];
-    if (file) heroImageUrl = await uploadFile(file, "prototype-cover");
+    if (file) heroImageUrl = await uploadFile(file, "homepage");
     const settings = {
-      id: "prototype",
+      id: "global",
       hero_media_type: document.getElementById("hero-media-type").value,
       hero_icon_style: document.querySelector('input[name="hero_icon_style"]:checked')?.value || "orbit-shop",
       hero_image_url: heroImageUrl,
@@ -247,9 +249,9 @@ async function saveHomepageSettings() {
     if (error) throw error;
     homepageSettings = { ...settings, hero_product_id: settings.hero_product_id || "" };
     document.getElementById("hero-image-url").value = heroImageUrl;
-    setMessage("Prototype cover saved.");
+    setMessage("Homepage cover saved.");
   } catch (error) {
-    setMessage(error.message || "Prototype cover could not be saved.", true);
+    setMessage(error.message || "Homepage cover could not be saved.", true);
   }
 }
 
@@ -260,7 +262,7 @@ async function saveAppearanceSettings() {
     values[key] = control?.type === "checkbox" ? control.checked : control?.value;
   });
   const nextAppearance = normalizeAppearance(values);
-  const { error } = await supabase.from("shop_settings").upsert({ id: "prototype", appearance_config: nextAppearance });
+  const { error } = await supabase.from("shop_settings").upsert({ id: "global", appearance_config: nextAppearance });
   if (error) return setMessage(error.message || "Website customization could not be saved.", true);
   appearance = nextAppearance;
   setMessage("Website customization saved.");
@@ -354,6 +356,13 @@ async function saveItem(event) {
     const collectionIds = selectedCollectionIds();
     const item = await attachUploads(collectItem());
     if (item.is_featured && !item.is_published) throw new Error("Publish the item before making it featured.");
+    if (item.early_access_enabled && (!item.early_access_code || !item.shopify_product_url)) {
+      throw new Error("Early access requires both a code and a Shopify Product URL.");
+    }
+    if (item.is_featured) {
+      const { error: featuredError } = await supabase.from("shop_items").update({ is_featured: false }).eq("is_featured", true);
+      if (featuredError) throw featuredError;
+    }
     const result = id
       ? await supabase.from("shop_items").update(item).eq("id", id).select().single()
       : await supabase.from("shop_items").insert(item).select().single();

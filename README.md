@@ -1,45 +1,91 @@
-# SHIPS Future Storefront Prototype
+# SHIPS Clothing Brand
 
-This is a separate, plain-static prototype for a possible future SHIPS rebrand.
+A plain-static GitHub Pages site for the independent SHIPS clothing brand.
 
-It opens directly into a centered, horizontal collection wheel and keeps the public navigation intentionally limited to **Collection** and **Cart**. It is not the live SHIPS website and does not contain a `CNAME` file.
+SHIPS is focused on selected garments, seasonal collections, and small-batch releases designed in Nova Scotia. Custom print requests remain an optional secondary feature for select garments. The working film portfolio is not modified by this project.
 
-## What Is Shared
+## One-Time Setup
 
-This prototype uses the same Supabase project and the same browser-safe publishable configuration as the live shop.
+1. Open the existing Supabase project.
+2. Open **SQL Editor**.
+3. Create a new query.
+4. Paste the complete contents of `supabase-shop-setup.sql`.
+5. Click **Run** once.
+6. Upload the contents of the `docs` folder to the root of a new GitHub repository, or configure GitHub Pages to publish from `/docs`.
+7. In Supabase Authentication URL settings, add the new shop's final GitHub Pages address as an allowed redirect URL.
+8. Open `admin.html` on the deployed shop and sign in with the authorized Google account.
 
-- Garments
-- Product images
-- Published and draft status
-- Featured garments
-- Collections and collection membership
-- Shopify product links and availability
-- Authorized private editor account
+## Completely Renew The Existing Shop
 
-Changes to those records from either editor appear on both storefronts.
+Use only `supabase-shop-full-renew.sql` for the complete renewal. It is intentionally destructive: it removes and rebuilds the shop catalogue tables, permissions, public views, categories, media-bucket rules, and image-free garment catalogue.
 
-## What Is Separate
+1. Open the existing Supabase project.
+2. Open **SQL Editor** and create a new query.
+3. Paste the complete contents of `supabase-shop-full-renew.sql`.
+4. Click **Run** once.
+5. Upload the updated contents of `docs` to GitHub Pages.
+6. Open `admin.html`, sign in, and add the garment images.
 
-The prototype reads and saves the `prototype` row in `shop_settings`. This prevents its appearance controls from overwriting the live shop's `global` appearance row.
+The public category buttons will be **All**, **Pants**, **T-Shirts**, and **Hoodies**. `All` is automatic. The three named categories remain editable in the private editor, and up to six custom categories can exist.
 
-Run `supabase-shop-prototype-settings.sql` once in the existing Supabase SQL Editor before deploying the prototype. The script:
+## Adding Collections To An Existing Shop
 
-- Adds the isolated `prototype` settings row.
-- Allows the existing public settings view to expose both `global` and `prototype`.
-- Does not update or delete garments, images, collections, or live settings.
+If the shop was already set up before collections were added:
 
-## Local Preview
+1. Open the existing Supabase project.
+2. Open **SQL Editor** and create a new query.
+3. Paste the complete contents of `supabase-shop-collections-step-1.sql`, press `Ctrl+A` so the entire query is selected, then click **Run**.
+4. Confirm the result shows `shop_collections` and `shop_item_collections`.
+5. Create another new query. Paste the complete contents of `supabase-shop-collections-step-2.sql`, press `Ctrl+A`, then click **Run**.
+6. Upload the updated contents of `docs` to GitHub Pages.
 
-Publish or serve the contents of `docs`. The public entry is `index.html`; the shared private editor is `admin.html`.
+The collection migration is additive. It does not update, delete, publish, unpublish, or reassign any existing item. Existing published items remain visible under **All** until collections are assigned in the editor.
 
-## Deploying A Test Copy
+## Adding Theme Controls To An Existing Shop
 
-1. Create a separate GitHub repository for the prototype.
-2. Run `supabase-shop-prototype-settings.sql` once in the existing Supabase project.
-3. Upload the contents of `docs` and configure GitHub Pages.
-4. Add the prototype's final `admin.html` address to Supabase Authentication redirect URLs.
-5. Do not add the live `theshipsshop.com` CNAME to this prototype repository.
+Run `supabase-shop-themes.sql` once in the Supabase SQL Editor. It preserves every existing garment and collection while adding the global website theme setting and the product-level **Use Global Theme** option.
 
-## Security
+After running it, upload the updated `docs` folder. The private editor can switch the whole site between Core, Sunfade, Clear Blue, Soft Orange, Warm Yellow, Fresh Green, and Studio Red. Individual products can inherit the global theme or use their own selection.
 
-The static files contain only the existing Supabase publishable browser key. They do not contain the database password, service-role key, Google client secret, or payment credentials. Supabase row-level security remains responsible for restricting editor access.
+## Adding Homepage Cover Controls To An Existing Shop
+
+Run `supabase-shop-homepage-settings.sql` once in the Supabase SQL Editor. It adds homepage cover controls without deleting or changing any garments. The private editor can then show one of six SHIPS hero-art styles, an uploaded homepage image, or a published product on the homepage.
+
+The public request and purchase email is `purchase@theshipsshop.com`. The private admin login remains authorized to the existing iCloud Google account so the editor does not lock you out.
+
+Run `supabase-shop-purchase-email.sql` once if the old address was ever typed into saved garment descriptions or request wording. It only replaces that address in saved public garment copy; it does not alter the private admin login.
+
+## Adding The Request Cart And Website Customization
+
+Run `supabase-shop-appearance-settings.sql` once in the Supabase SQL Editor, then upload the updated `docs` folder. This additive migration does not change or delete garments. It adds the extensible website-customization settings used by the private editor.
+
+The request cart is stored only in each visitor's browser. It combines multiple garment requests into one email and does not store customer information in Supabase.
+
+## Adding Shopify Links And Availability To An Existing Shop
+
+Run `supabase-shop-shopify-links.sql` once in the Supabase SQL Editor before uploading the updated `docs` folder. This additive migration preserves every garment, image, collection, and theme. Existing garments default to **Request Only**, so their current email request buttons continue working until you deliberately change them.
+
+In the private editor, set an availability status and optionally paste a normal Shopify product or checkout URL. An **Available** garment with a Shopify URL shows **Buy Now**. No Shopify API, Storefront API, token, or payment credential is used or stored by this site.
+
+## Security Model
+
+- The site contains a Supabase **publishable** browser key. This key is intentionally safe to expose and cannot be hidden in a plain static GitHub Pages site.
+- The site does **not** contain a database password, Supabase service-role key, Google client secret, private API key, or payment credential.
+- Supabase row-level security only permits the authorized Google account to read drafts or change shop items.
+- Public visitors can only read rows exposed by `public_shop_items`, which contains published items.
+- Public visitors can only read visible collection names and published item memberships.
+- Public visitors cannot upload, edit, feature, publish, or delete items.
+- Request emails are created inside the visitor's browser. Customer information is not collected or stored by the website.
+
+## Listing Modes
+
+- **Collection garment:** a standard piece in the current SHIPS catalogue.
+- **Selected garment:** a garment that may have additional details or limited optional requests.
+
+Every request email asks for the garment, size, color, shipping location, and notes. It includes one optional line for a custom print request when available.
+
+## Files to Publish
+
+Publish only the contents of `docs`.
+
+Do not upload `supabase-shop-setup.sql`, the tests, or this README as part of the public website unless you deliberately want them in the repository. They contain no secrets, but visitors do not need them.

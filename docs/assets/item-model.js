@@ -165,6 +165,8 @@ export function normalizeItem(item = {}) {
     request_intro: item.request_intro || "",
     shopify_product_url: String(item.shopify_product_url || "").trim(),
     availability_status: availabilityStatus,
+    early_access_enabled: Boolean(item.early_access_enabled),
+    early_access_code: String(item.early_access_code || ""),
     theme,
     is_featured: Boolean(item.is_featured),
     is_published: Boolean(item.is_published),
@@ -247,6 +249,9 @@ export function getProductAction(rawItem, recipient = ORDER_EMAIL) {
   }
   if (item.availability_status === "sold-out") {
     return { type: "disabled", label: "SOLD OUT", href: "", disabled: true };
+  }
+  if (item.availability_status === "available" && item.early_access_enabled) {
+    return { type: "early-access", label: "GET EARLY WITH A CODE", href: "", disabled: false };
   }
   if (item.availability_status === "available" && isSafeWebUrl(item.shopify_product_url)) {
     return { type: "shopify", label: "BUY NOW", href: item.shopify_product_url, disabled: false };

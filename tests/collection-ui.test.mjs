@@ -31,16 +31,15 @@ test("public collection page has filter controls and Nova Scotia language", () =
   assert.match(siteJs, /filterItemsByCollection/);
 });
 
-test("catalogue opens on Featured before All", () => {
-  assert.match(siteJs, /let activeCollection = "featured"/);
-  assert.match(siteJs, /\{ name: "Featured", slug: "featured" \}[\s\S]*\{ name: "All", slug: "all" \}/);
-  assert.match(siteJs, /activeCollection = "featured"/);
+test("homepage catalogue opens on All and excludes the homepage feature", () => {
+  assert.match(siteJs, /let activeCollection = "all"/);
+  assert.match(siteJs, /\{ name: "All", slug: "all" \}/);
+  assert.doesNotMatch(siteJs, /\{ name: "Featured", slug: "featured" \}/);
 });
 
-test("admin supports multiple catalogue featured garments and keeps homepage controls collapsed", () => {
-  assert.match(adminHtml, /Featured in catalogue/);
-  assert.doesNotMatch(adminHtml, /Featured on homepage/);
-  assert.doesNotMatch(adminJs, /update\(\{ is_featured: false \}\)\.eq\("is_featured", true\)/);
+test("admin supports one homepage featured garment and keeps homepage controls collapsed", () => {
+  assert.match(adminHtml, /Featured on homepage/);
+  assert.match(adminJs, /update\(\{ is_featured: false \}\)\.eq\("is_featureed", true\)|update\(\{ is_featured: false \}\)\.eq\("is_featured", true\)/);
   assert.match(adminHtml, /<details class="homepage-manager">/);
   assert.match(adminHtml, /<details class="appearance-manager">/);
   assert.doesNotMatch(adminHtml, /<details class="appearance-manager" open>/);

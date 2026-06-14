@@ -38,6 +38,19 @@ test("available garments with a Shopify URL use a same-tab buy action", () => {
   assert.deepEqual(action, { type: "shopify", label: "BUY NOW", href: url, disabled: false });
 });
 
+test("early-access garments ask for a code before exposing checkout", () => {
+  const item = normalizeItem({
+    title: "Early Hoodie",
+    availability_status: "available",
+    shopify_product_url: "",
+    early_access_enabled: true,
+  });
+  assert.equal(item.early_access_enabled, true);
+  assert.deepEqual(getProductAction(item), {
+    type: "early-access", label: "GET EARLY WITH A CODE", href: "", disabled: false,
+  });
+});
+
 test("available garments without a Shopify URL retain the email request flow", () => {
   const action = getProductAction({ title: "Request Tee", availability_status: "available" }, "orders@example.com");
   assert.equal(action.type, "email");

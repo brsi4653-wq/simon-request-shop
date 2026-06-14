@@ -3,76 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SHIPS garments and collections." />
-    <title>SHIPS / Future Collection</title>
+    <meta name="description" content="SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections and selected garments." />
+    <title>SHIPS</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/site.css?v=20260613-stacked-behind-2" />
+    <link rel="stylesheet" href="assets/site.css?v=20260614-impact-statement" />
   </head>
   <body>
     <header class="site-header">
-      <button class="brand" data-view="collection" aria-label="Open collection">
-        <img src="images/logos/ships-main-black-display.png" alt="SHIPS" />
+      <button class="brand" data-view="home" aria-label="Go to home">
+        <img id="brand-logo" src="images/logos/ships-main-white-display.png" alt="SHIPS" />
       </button>
-      <nav aria-label="Main navigation">
-        <button data-view="collection" class="active">Collection</button>
-        <button data-view="cart" class="cart-nav">Cart <span id="cart-count">0</span></button>
-      </nav>
     </header>
 
     <main>
-      <div id="collection" class="view active">
-        <section class="collection-shell">
-          <div class="collection-meta">
-            <span class="kicker">Designed in Nova Scotia</span>
-            <span id="wheel-position">00 / 00</span>
+      <div class="view active" id="home">
+        <section class="hero">
+          <div class="hero-copy">
+            <span class="kicker" id="home-kicker">Independent clothing / Designed in Nova Scotia</span>
+            <h1 id="home-headline">Designed, made, and shipped.</h1>
+            <p id="home-intro">SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections, selected garments, and small-batch releases.</p>
           </div>
-          <nav id="collection-filters" class="collection-filters" aria-label="Filter the collection"></nav>
-          <section class="product-deck" aria-label="Products">
-            <div class="product-wheel" id="product-wheel"></div>
-            <div class="deck-controls" aria-label="Product navigation">
-              <button type="button" data-deck-step="-1" aria-label="Previous garment">&larr;</button>
-              <span>Scroll / swipe</span>
-              <button type="button" data-deck-step="1" aria-label="Next garment">&rarr;</button>
-            </div>
-          </section>
-          <div class="active-product-copy" id="active-product-copy">
-            <span class="kicker">Current selection</span>
-            <h1>Select a garment</h1>
-            <p>Scroll once to move through the collection.</p>
+          <div class="hero-art" id="hero-visual">
+            <span class="orbit orbit-one"></span>
+            <span class="orbit orbit-two"></span>
+            <img src="images/logos/the-ships-shop-display.png" alt="" />
           </div>
         </section>
-      </div>
-
-      <div id="item-detail" class="view"></div>
-
-      <div id="cart" class="view">
-        <section class="cart-page">
-          <div class="cart-heading">
-            <span class="kicker">Combined garment request</span>
-            <h1>Your cart.</h1>
-            <p>Complete the details for each garment, then request everything in one email.</p>
-          </div>
-          <div class="cart-layout">
-            <div id="cart-items" class="cart-items"></div>
-            <aside class="cart-summary">
-              <span class="kicker">Request summary</span>
-              <h2 id="cart-summary-title">No garments yet.</h2>
-              <p>Cart details stay only in this browser.</p>
-              <a id="request-cart" class="primary-action" href="#" aria-disabled="true">Request entire cart</a>
-              <button id="clear-cart" class="text-action" type="button">Clear cart</button>
-            </aside>
-          </div>
+        <section class="impact-statement" aria-label="SHIPS environmental commitment">
+          <span>Built For The Future.</span>
+          <p>Every SHIPS purchase contributes toward carbon removal efforts.</p>
         </section>
+        <section id="homepage-feature" class="homepage-feature" hidden></section>
+        <section class="page-intro">
+          <span class="kicker" id="collection-kicker">Designed in Nova Scotia / Garment catalogue</span>
+          <h1 id="collection-title">Browse the collection.</h1>
+          <p id="collection-intro">Explore current garments, seasonal releases, and selected pieces from SHIPS.</p>
+        </section>
+        <nav id="collection-filters" class="collection-filters" aria-label="Filter the collection"></nav>
+        <section class="item-grid" id="item-grid"></section>
       </div>
+
+      <div class="view" id="item-detail"></div>
+
     </main>
+
+    <dialog id="early-access-dialog" class="early-access-dialog">
+      <form id="early-access-form" method="dialog">
+        <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+        <span class="kicker">Early access</span>
+        <h2>Enter your release code.</h2>
+        <p>This garment is available early with a valid release code.</p>
+        <input id="early-access-item-id" type="hidden" />
+        <label>Access code<input id="early-access-code" autocomplete="off" required /></label>
+        <p id="early-access-message" class="early-access-message"></p>
+        <button class="primary-action" type="submit">Unlock garment</button>
+      </form>
+    </dialog>
 
     <footer>
       <span>&copy; <span id="year"></span> SHIPS</span>
-      <span>Future storefront prototype</span>
-      <a href="admin.html">Private editor</a>
+      <span id="footer-middle">Designed in Nova Scotia</span>
+      <span id="footer-right">Independent garments and seasonal releases</span>
+      <a href="admin.html?v=20260610-shopify-url-warning">Private editor</a>
     </footer>
 
-    <script type="module" src="assets/site.js?v=20260613-stacked-behind-2"></script>
+  <script type="module" src="assets/site.js?v=20260614-early-access"></script>
   </body>
 </html>
