@@ -39,3 +39,8 @@ test("public early-access action verifies through Supabase instead of exposing t
   assert.match(migration, /case when item\.early_access_enabled then '' else item\.shopify_product_url end/i);
   assert.doesNotMatch(migration, /delete from public\.shop_items/i);
 });
+
+test("early-access dialog can always be closed without submitting a code", () => {
+  assert.match(siteJs, /querySelector\("\.dialog-close"\)\.addEventListener\("click"/);
+  assert.match(siteJs, /early-access-dialog"\)\.close\(\)/);
+});

@@ -269,6 +269,10 @@ async function loadItems() {
 }
 
 navButtons.forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
+document.querySelector(".dialog-close").addEventListener("click", (event) => {
+  event.preventDefault();
+  document.getElementById("early-access-dialog").close();
+});
 document.getElementById("early-access-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (event.submitter?.classList.contains("dialog-close")) {
