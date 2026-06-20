@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Shop Editor | SHIPS</title>
-    <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/admin.css?v=20260612-featured-catalogue" />
+    <link rel="stylesheet" href="assets/admin.css?v=20260616-stripe-checkout" />
   </head>
   <body>
     <header class="admin-header">
-      <a href="index.html"><img src="images/logos/ships-tag-display.png" alt="SHIPS" /></a>
+      <a href="index.html"><img src="images/logos/ships-wordmark-black-transparent.png" alt="SHIPS" /></a>
       <div class="header-actions">
         <span id="account-label">Private shop editor</span>
         <button id="sign-out" class="quiet-button" hidden>Sign Out</button>
@@ -66,7 +65,7 @@
               </fieldset>
               <fieldset>
                 <legend>Header Branding</legend>
-                <label>Header logo<select name="header_logo"><option value="ships-white">SHIPS White</option><option value="ships-black">SHIPS Black</option><option value="ships-tag">SHIPS Tag</option><option value="ships-shop">The SHIPS Shop</option></select></label>
+                <label>Header logo<select name="header_logo"><option value="wordmark-white">Full wordmark</option><option value="wordmark-black">Full wordmark (dark)</option><option value="mark-white">Compact mark</option><option value="mark-black">Compact mark (dark)</option></select></label>
                 <label>Header logo size<select name="header_logo_size"><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option></select></label>
               </fieldset>
               <fieldset>
@@ -142,11 +141,19 @@
             </div>
             <div class="form-grid">
               <label>Availability status<select name="availability_status"><option value="available">Available</option><option value="coming-soon">Coming Soon</option><option value="sold-out">Sold Out</option><option value="request-only" selected>Request Only</option></select></label>
-              <label>Shopify Product URL <small>Optional. Paste a Shopify product or checkout link.</small><input name="shopify_product_url" type="url" placeholder="https://example.myshopify.com/products/garment" /></label>
+              <label>Shopify Product URL <small>Optional fallback. Paste a Shopify product or checkout link.</small><input name="shopify_product_url" type="url" placeholder="https://example.myshopify.com/products/garment" /></label>
             </div>
             <fieldset>
+              <legend>Stripe Checkout</legend>
+              <label class="check-control"><input name="stripe_checkout_enabled" type="checkbox" /> Enable Stripe Checkout for this garment</label>
+              <div class="form-grid">
+                <label>Stripe price CAD <small>Used by the private Supabase checkout function.</small><input name="stripe_price_cad" type="number" min="0" step="0.01" placeholder="55.00" /></label>
+                <label>Checkout currency <small>Currently fixed to CAD.</small><input name="stripe_currency" value="cad" readonly /></label>
+              </div>
+            </fieldset>
+            <fieldset>
               <legend>Early Access</legend>
-              <label class="check-control"><input name="early_access_enabled" type="checkbox" /> Require a code before opening the Shopify link</label>
+              <label class="check-control"><input name="early_access_enabled" type="checkbox" /> Require a code before checkout opens</label>
               <label>Early-access code <small>Private. Visitors cannot read this from the public website.</small><input name="early_access_code" autocomplete="off" /></label>
             </fieldset>
 
@@ -203,6 +210,6 @@
       </section>
     </main>
 
-  <script type="module" src="assets/admin.js?v=20260614-early-access"></script>
+  <script type="module" src="assets/admin.js?v=20260616-stripe-checkout"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ADMIN_EMAIL, ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
-import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260614-early-access";
+import { buildRequestEmail, createSlug, DEFAULT_GLOBAL_THEME, getProductAction, getTheme, ITEM_MODES, MAX_COLLECTIONS, normalizeCollections, normalizeItem, parseGallery, parseLines, resolveProductTheme, THEMES } from "./item-model.js?v=20260616-stripe-checkout";
 import { normalizeAppearance } from "./settings-model.js?v=20260612-readable-logo";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -124,6 +124,9 @@ function collectItem() {
     request_subject: formValue("request_subject"),
     request_intro: formValue("request_intro"),
     shopify_product_url: formValue("shopify_product_url"),
+    stripe_checkout_enabled: form.elements.stripe_checkout_enabled.checked,
+    stripe_price_cents: Math.max(0, Math.round(Number(form.elements.stripe_price_cad.value || 0) * 100)),
+    stripe_currency: "cad",
     availability_status: form.elements.availability_status.value,
     early_access_enabled: form.elements.early_access_enabled.checked,
     early_access_code: formValue("early_access_code"),
@@ -160,6 +163,8 @@ function fillForm(rawItem) {
   form.elements.sizes.value = linesToText(item.sizes);
   form.elements.colors.value = linesToText(item.colors);
   form.elements.customization_options.value = linesToText(item.customization_options);
+  form.elements.stripe_price_cad.value = item.stripe_price_cents ? (item.stripe_price_cents / 100).toFixed(2) : "";
+  form.elements.stripe_currency.value = item.stripe_currency || "cad";
   renderItemCollectionOptions(item.collection_ids);
   const preview = document.getElementById("main-preview");
   preview.hidden = !item.main_image_url;
@@ -180,16 +185,19 @@ function renderPreview() {
   const theme = getTheme(resolveProductTheme(item.theme, globalTheme));
   const email = buildRequestEmail(item, ORDER_EMAIL);
   const action = getProductAction(item, ORDER_EMAIL);
-  const missingShopifyUrl = item.availability_status === "available" && !item.shopify_product_url;
-    const actionDetails = action.type === "email"
+  const hasStripeCheckout = item.stripe_checkout_enabled && item.stripe_price_cents > 0;
+  const missingCheckout = item.availability_status === "available" && !hasStripeCheckout && !item.shopify_product_url;
+  const invalidStripe = item.stripe_checkout_enabled && item.stripe_price_cents <= 0;
+  const actionDetails = action.type === "email"
     ? `<pre>${email.body}</pre>`
-    : `<p>${action.type === "shopify" ? escapeHtml(action.href) : action.type === "early-access" ? "Visitors must enter the private early-access code." : "The public action button is disabled."}</p>`;
+    : `<p>${action.type === "stripe-checkout" ? "Stripe Checkout will open through the private Supabase checkout function." : action.type === "shopify" ? escapeHtml(action.href) : action.type === "early-access" ? "Visitors must enter the private early-access code." : "The public action button is disabled."}</p>`;
   document.getElementById("editor-preview").innerHTML = `${item.main_image_url ? `<img src="${item.main_image_url}" alt="" />` : "<p>No image yet.</p>"}
     <h3>${item.title}</h3>
     <p>${ITEM_MODES[item.item_mode].name} / Theme: ${theme.name}</p>
     <p>${item.summary || "No summary yet."}</p>
     <p><strong>Public button: ${action.label}</strong></p>
-    ${missingShopifyUrl ? '<p class="editor-warning"><strong>Shopify URL is empty.</strong> Available will use REQUEST GARMENT until a Shopify URL is saved.</p>' : ""}
+    ${invalidStripe ? '<p class="editor-warning"><strong>Stripe Checkout needs a price.</strong> Add a CAD price before publishing with Stripe enabled.</p>' : ""}
+    ${missingCheckout ? '<p class="editor-warning"><strong>Shopify URL is empty and Stripe Checkout is off.</strong> Available will use REQUEST GARMENT until Stripe Checkout or a Shopify URL is saved.</p>' : ""}
     ${actionDetails}`;
 }
 
@@ -355,9 +363,11 @@ async function saveItem(event) {
     const id = document.getElementById("item-id").value;
     const collectionIds = selectedCollectionIds();
     const item = await attachUploads(collectItem());
+    const hasStripeCheckout = item.stripe_checkout_enabled && item.stripe_price_cents > 0;
     if (item.is_featured && !item.is_published) throw new Error("Publish the item before making it featured.");
-    if (item.early_access_enabled && (!item.early_access_code || !item.shopify_product_url)) {
-      throw new Error("Early access requires both a code and a Shopify Product URL.");
+    if (item.stripe_checkout_enabled && item.stripe_price_cents <= 0) throw new Error("Stripe Checkout requires a CAD price.");
+    if (item.early_access_enabled && (!item.early_access_code || (!item.shopify_product_url && !hasStripeCheckout))) {
+      throw new Error("Early access requires a code plus Stripe Checkout or a Shopify Product URL.");
     }
     if (item.is_featured) {
       const { error: featuredError } = await supabase.from("shop_items").update({ is_featured: false }).eq("is_featured", true);
@@ -368,12 +378,12 @@ async function saveItem(event) {
       : await supabase.from("shop_items").insert(item).select().single();
     if (result.error) throw result.error;
     await saveItemCollections(result.data.id, collectionIds);
-    const missingShopifyUrl = item.availability_status === "available" && !item.shopify_product_url;
+    const missingCheckout = item.availability_status === "available" && !hasStripeCheckout && !item.shopify_product_url;
     setMessage(
-      missingShopifyUrl
-        ? "Garment saved, but Shopify URL is empty. The public button will remain REQUEST GARMENT."
+      missingCheckout
+        ? "Garment saved, but Shopify URL is empty and Stripe Checkout is off. The public button will remain REQUEST GARMENT."
         : (item.is_published ? "Garment saved and published." : "Garment draft saved privately."),
-      missingShopifyUrl,
+      missingCheckout,
     );
     await loadAdminData(result.data.id);
   } catch (error) {
@@ -404,6 +414,8 @@ function duplicateItem() {
   form.elements.sizes.value = linesToText(item.sizes);
   form.elements.colors.value = linesToText(item.colors);
   form.elements.customization_options.value = linesToText(item.customization_options);
+  form.elements.stripe_price_cad.value = item.stripe_price_cents ? (item.stripe_price_cents / 100).toFixed(2) : "";
+  form.elements.stripe_currency.value = item.stripe_currency || "cad";
   form.elements.is_featured.checked = false;
   renderItemCollectionOptions(collectionIds);
   renderPreview();

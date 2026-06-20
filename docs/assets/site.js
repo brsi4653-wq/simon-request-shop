@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
-import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260614-early-access";
+import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, normalizeItem, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260616-stripe-checkout";
 import { normalizeAppearance, resolveHeaderLogo } from "./settings-model.js?v=20260612-readable-logo";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -11,6 +11,7 @@ let activeCollection = "all";
 let globalTheme = DEFAULT_GLOBAL_THEME;
 let homepageSettings = { hero_media_type: "icon", hero_icon_style: "orbit-shop", hero_image_url: "", hero_product_id: "" };
 let appearance = normalizeAppearance();
+let pendingEarlyAccessCode = "";
 const views = [...document.querySelectorAll(".view")];
 const navButtons = [...document.querySelectorAll("[data-view]")];
 const brandLogo = document.getElementById("brand-logo");
@@ -73,11 +74,11 @@ function renderHeroVisual() {
   }
   const style = homepageSettings.hero_icon_style || "orbit-shop";
   const imageByStyle = {
-    "orbit-shop": "images/logos/the-ships-shop-display.png",
-    "orbit-ships": "images/logos/ships-main-white-display.png",
-    "orbit-tag": "images/logos/ships-tag-display.png",
-    "plain-shop": "images/logos/the-ships-shop-display.png",
-    "plain-ships": "images/logos/ships-main-white-display.png",
+    "orbit-shop": "images/logos/ships-mark-white-transparent.png",
+    "orbit-ships": "images/logos/ships-wordmark-white-transparent.png",
+    "orbit-tag": "images/logos/ships-mark-white-transparent.png",
+    "plain-shop": "images/logos/ships-mark-white-transparent.png",
+    "plain-ships": "images/logos/ships-wordmark-white-transparent.png",
   };
   const plain = style.startsWith("plain-");
   heroVisual.className = `hero-art hero-icon-style-${style}`;
@@ -104,6 +105,9 @@ function productActionMarkup(item, className = "primary-action request-action") 
   if (action.disabled) return `<button class="${className}" type="button" disabled>${escapeHtml(action.label)}</button>`;
   if (action.type === "early-access") {
     return `<button class="${className}" type="button" data-early-access="${escapeHtml(item.id)}">${escapeHtml(action.label)}</button>`;
+  }
+  if (action.type === "stripe-checkout") {
+    return `<button class="${className}" type="button" data-stripe-checkout="${escapeHtml(item.id)}">${escapeHtml(action.label)}</button>`;
   }
   return `<a class="${className}" href="${escapeHtml(action.href)}">${escapeHtml(action.type === "email" ? appearance.request_now_label : action.label)}</a>`;
 }
@@ -211,6 +215,7 @@ function renderDetail(item) {
 function bindButtons() {
   document.querySelectorAll("[data-item]").forEach((button) => button.addEventListener("click", () => showItem(button.dataset.item)));
   bindEarlyAccessButtons();
+  bindStripeCheckoutButtons();
 }
 
 function bindEarlyAccessButtons() {
@@ -220,6 +225,29 @@ function bindEarlyAccessButtons() {
     document.getElementById("early-access-message").textContent = "";
     document.getElementById("early-access-dialog").showModal();
   }));
+}
+
+function bindStripeCheckoutButtons() {
+  document.querySelectorAll("[data-stripe-checkout]").forEach((button) => button.addEventListener("click", () => openStripeCheckout(button.dataset.stripeCheckout)));
+}
+
+function optionMarkup(values, fallback) {
+  const options = values?.length ? values : [fallback];
+  return options.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+}
+
+function openStripeCheckout(itemId, earlyAccessCode = "") {
+  const item = normalizeItem(items.find((entry) => entry.id === itemId));
+  if (!item.id) return;
+  pendingEarlyAccessCode = earlyAccessCode;
+  document.getElementById("stripe-checkout-item-id").value = item.id;
+  document.getElementById("checkout-quantity").value = "1";
+  document.getElementById("checkout-size").innerHTML = optionMarkup(item.sizes, "Confirm after checkout");
+  document.getElementById("checkout-color").innerHTML = optionMarkup(item.colors, "Confirm after checkout");
+  document.getElementById("checkout-size-wrap").hidden = item.sizes.length === 0;
+  document.getElementById("checkout-color-wrap").hidden = item.colors.length === 0;
+  document.getElementById("stripe-checkout-message").textContent = "";
+  document.getElementById("stripe-checkout-dialog").showModal();
 }
 
 function showView(id) {
@@ -273,6 +301,10 @@ document.querySelector(".dialog-close").addEventListener("click", (event) => {
   event.preventDefault();
   document.getElementById("early-access-dialog").close();
 });
+document.querySelector("#stripe-checkout-dialog .dialog-close").addEventListener("click", (event) => {
+  event.preventDefault();
+  document.getElementById("stripe-checkout-dialog").close();
+});
 document.getElementById("early-access-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (event.submitter?.classList.contains("dialog-close")) {
@@ -283,12 +315,41 @@ document.getElementById("early-access-form").addEventListener("submit", async (e
   const itemId = document.getElementById("early-access-item-id").value;
   const code = document.getElementById("early-access-code").value;
   message.textContent = "Checking code...";
+  const item = normalizeItem(items.find((entry) => entry.id === itemId));
+  if (item.stripe_checkout_enabled && item.stripe_price_cents > 0) {
+    document.getElementById("early-access-dialog").close();
+    openStripeCheckout(itemId, code);
+    return;
+  }
   const { data, error } = await supabase.rpc("verify_shop_early_access", { p_item_id: itemId, p_code: code });
   if (error || !data) {
     message.textContent = "That code is not valid for this release.";
     return;
   }
   location.href = data;
+});
+document.getElementById("stripe-checkout-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (event.submitter?.classList.contains("dialog-close")) {
+    document.getElementById("stripe-checkout-dialog").close();
+    return;
+  }
+  const message = document.getElementById("stripe-checkout-message");
+  message.textContent = "Opening secure checkout...";
+  const payload = {
+    item_id: document.getElementById("stripe-checkout-item-id").value,
+    quantity: Number(document.getElementById("checkout-quantity").value || 1),
+    country: document.getElementById("checkout-country").value,
+    size: document.getElementById("checkout-size-wrap").hidden ? "" : document.getElementById("checkout-size").value,
+    color: document.getElementById("checkout-color-wrap").hidden ? "" : document.getElementById("checkout-color").value,
+    early_access_code: pendingEarlyAccessCode,
+  };
+  const { data, error } = await supabase.functions.invoke("create-stripe-checkout", { body: payload });
+  if (error || !data?.url) {
+    message.textContent = error?.message || "Checkout could not be opened. Please try again.";
+    return;
+  }
+  location.href = data.url;
 });
 document.getElementById("year").textContent = new Date().getFullYear();
 applyTheme(globalTheme);

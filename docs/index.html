@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections and selected garments." />
     <title>SHIPS</title>
-    <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="assets/site.css?v=20260614-impact-statement" />
+    <link rel="stylesheet" href="assets/site.css?v=20260619-logo-refresh" />
   </head>
   <body>
     <header class="site-header">
       <button class="brand" data-view="home" aria-label="Go to home">
-        <img id="brand-logo" src="images/logos/ships-main-white-display.png" alt="SHIPS" />
+        <img id="brand-logo" src="images/logos/ships-wordmark-white-transparent.png" alt="SHIPS" />
       </button>
     </header>
 
@@ -27,7 +26,7 @@
           <div class="hero-art" id="hero-visual">
             <span class="orbit orbit-one"></span>
             <span class="orbit orbit-two"></span>
-            <img src="images/logos/the-ships-shop-display.png" alt="" />
+            <img src="images/logos/ships-mark-white-transparent.png" alt="" />
           </div>
         </section>
         <section class="impact-statement" aria-label="SHIPS environmental commitment">
@@ -61,6 +60,30 @@
       </form>
     </dialog>
 
+    <dialog id="stripe-checkout-dialog" class="stripe-checkout-dialog">
+      <form id="stripe-checkout-form" method="dialog">
+        <button class="dialog-close" value="cancel" aria-label="Close">Ã—</button>
+        <span class="kicker">Checkout</span>
+        <h2>Confirm garment details.</h2>
+        <p>Choose the request details that should be attached to the Stripe checkout.</p>
+        <input id="stripe-checkout-item-id" type="hidden" />
+        <div class="checkout-grid">
+          <label>Quantity<input id="checkout-quantity" type="number" min="1" max="10" value="1" required /></label>
+          <label>Shipping region<select id="checkout-country" required>
+            <option value="CA">Canada</option>
+            <option value="US">United States</option>
+            <option value="INTL">International</option>
+          </select></label>
+        </div>
+        <div class="checkout-grid">
+          <label id="checkout-size-wrap">Size<select id="checkout-size"></select></label>
+          <label id="checkout-color-wrap">Color<select id="checkout-color"></select></label>
+        </div>
+        <p id="stripe-checkout-message" class="message"></p>
+        <button class="primary-action" type="submit">Continue to checkout</button>
+      </form>
+    </dialog>
+
     <footer>
       <span>&copy; <span id="year"></span> SHIPS</span>
       <span id="footer-middle">Designed in Nova Scotia</span>
@@ -68,6 +91,6 @@
       <a href="admin.html?v=20260610-shopify-url-warning">Private editor</a>
     </footer>
 
-  <script type="module" src="assets/site.js?v=20260614-dialog-close"></script>
+  <script type="module" src="assets/site.js?v=20260619-logo-refresh"></script>
   </body>
 </html>

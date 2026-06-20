@@ -5,17 +5,17 @@ export const DEFAULT_GLOBAL_THEME = "core";
 export const THEMES = {
   core: {
     name: "Core / Monochrome",
-    logo: "images/logos/ships-main-white-display.png",
-    background: "#101010",
-    surface: "#181818",
-    soft: "#282621",
-    ink: "#f7f3e9",
-    muted: "#bbb4a8",
-    accent: "#f3e5ce",
+    logo: "images/logos/ships-wordmark-white-transparent.png",
+    background: "#0b0b0b",
+    surface: "#141414",
+    soft: "#232323",
+    ink: "#f5f5f3",
+    muted: "#b8b8b3",
+    accent: "#ffffff",
   },
   sunfade: {
     name: "Sunfade / Pink White",
-    logo: "images/logos/ships-main-black-display.png",
+    logo: "images/logos/ships-wordmark-black-transparent.png",
     background: "#fff7f8",
     surface: "#ffffff",
     soft: "#f7dfe5",
@@ -25,7 +25,7 @@ export const THEMES = {
   },
   green: {
     name: "Fresh Green",
-    logo: "images/logos/ships-main-black-display.png",
+    logo: "images/logos/ships-wordmark-black-transparent.png",
     background: "#f3f8ef",
     surface: "#ffffff",
     soft: "#e2f2dc",
@@ -35,7 +35,7 @@ export const THEMES = {
   },
   orange: {
     name: "Soft Orange",
-    logo: "images/logos/ships-main-black-display.png",
+    logo: "images/logos/ships-wordmark-black-transparent.png",
     background: "#fff5e8",
     surface: "#fffdf8",
     soft: "#ffe4ca",
@@ -45,7 +45,7 @@ export const THEMES = {
   },
   blue: {
     name: "Clear Blue",
-    logo: "images/logos/ships-main-black-display.png",
+    logo: "images/logos/ships-wordmark-black-transparent.png",
     background: "#f1f9fc",
     surface: "#ffffff",
     soft: "#dceff7",
@@ -55,7 +55,7 @@ export const THEMES = {
   },
   red: {
     name: "Studio Red",
-    logo: "images/logos/ships-main-black-display.png",
+    logo: "images/logos/ships-wordmark-black-transparent.png",
     background: "#fff4f2",
     surface: "#ffffff",
     soft: "#ffe0dc",
@@ -65,7 +65,7 @@ export const THEMES = {
   },
   yellow: {
     name: "Warm Yellow",
-    logo: "images/logos/ships-main-black-display.png",
+    logo: "images/logos/ships-wordmark-black-transparent.png",
     background: "#fff9eb",
     surface: "#fffefa",
     soft: "#ffedbd",
@@ -75,13 +75,13 @@ export const THEMES = {
   },
   mono: {
     name: "Monochrome",
-    logo: "images/logos/ships-main-white-display.png",
-    background: "#101010",
-    surface: "#181818",
-    soft: "#282621",
-    ink: "#f7f3e9",
-    muted: "#bbb4a8",
-    accent: "#f3e5ce",
+    logo: "images/logos/ships-wordmark-white-transparent.png",
+    background: "#0b0b0b",
+    surface: "#141414",
+    soft: "#232323",
+    ink: "#f5f5f3",
+    muted: "#b8b8b3",
+    accent: "#ffffff",
   },
 };
 
@@ -146,6 +146,8 @@ export function normalizeItem(item = {}) {
   const itemMode = ITEM_MODES[item.item_mode] ? item.item_mode : "regular";
   const theme = item.theme === "global" || THEMES[item.theme] ? item.theme : "global";
   const availabilityStatus = AVAILABILITY_STATUSES[item.availability_status] ? item.availability_status : "request-only";
+  const stripePriceCents = Math.max(0, Math.round(Number(item.stripe_price_cents || 0)));
+  const stripeCurrency = String(item.stripe_currency || "cad").toLowerCase() === "cad" ? "cad" : "cad";
   return {
     id: item.id || "",
     slug: item.slug || createSlug(item.title || "untitled-item"),
@@ -164,6 +166,9 @@ export function normalizeItem(item = {}) {
     request_subject: item.request_subject || "",
     request_intro: item.request_intro || "",
     shopify_product_url: String(item.shopify_product_url || "").trim(),
+    stripe_checkout_enabled: Boolean(item.stripe_checkout_enabled),
+    stripe_price_cents: stripePriceCents,
+    stripe_currency: stripeCurrency,
     availability_status: availabilityStatus,
     early_access_enabled: Boolean(item.early_access_enabled),
     early_access_code: String(item.early_access_code || ""),
@@ -252,6 +257,9 @@ export function getProductAction(rawItem, recipient = ORDER_EMAIL) {
   }
   if (item.availability_status === "available" && item.early_access_enabled) {
     return { type: "early-access", label: "GET EARLY WITH A CODE", href: "", disabled: false };
+  }
+  if (item.availability_status === "available" && item.stripe_checkout_enabled && item.stripe_price_cents > 0) {
+    return { type: "stripe-checkout", label: "BUY NOW", href: "", disabled: false };
   }
   if (item.availability_status === "available" && isSafeWebUrl(item.shopify_product_url)) {
     return { type: "shopify", label: "BUY NOW", href: item.shopify_product_url, disabled: false };
