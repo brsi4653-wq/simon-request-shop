@@ -1,7 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { ORDER_EMAIL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=20260612-purchase-email";
 import { DEFAULT_GLOBAL_THEME, filterItemsByCollection, getProductAction, getTheme, normalizeCollections, normalizeItems, normalizeItem, resolveProductTheme, toPublicGarmentCopy } from "./item-model.js?v=20260616-stripe-checkout";
-import { normalizeAppearance, resolveHeaderLogo } from "./settings-model.js?v=20260612-readable-logo";
+import { normalizeAppearance, resolveHeaderLogo } from "./settings-model.js?v=20260619-streetwear-copy";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -126,7 +126,7 @@ function renderHomepageFeature() {
       ${item.main_image_url ? `<img src="${escapeHtml(item.main_image_url)}" alt="${escapeHtml(item.title)}" />` : imagePlaceholder(item.title)}
     </button>
     <div class="homepage-feature-copy">
-      <span class="kicker">Homepage feature / ${escapeHtml(item.eyebrow)}</span>
+      <span class="kicker">Featured garment / ${escapeHtml(item.eyebrow)}</span>
       <h2>${escapeHtml(item.title)}</h2>
       <p class="summary">${escapeHtml(item.summary)}</p>
       <p>${escapeHtml(item.description)}</p>
@@ -146,9 +146,9 @@ function renderCollection() {
   container.innerHTML = filteredItems.length
     ? filteredItems.map(itemCard).join("")
     : `<div class="empty-state">
-        <span class="kicker">${activeCollection === "all" ? "Nothing currently available" : "This collection is currently empty"}</span>
-        <h2>${activeCollection === "all" ? "There are no other garments at the moment." : `No garments in ${escapeHtml(activeName || "this collection")} yet.`}</h2>
-        <p>We apologize. Please check back later for the next available garment.</p>
+        <span class="kicker">${activeCollection === "all" ? "Current availability" : "Collection availability"}</span>
+        <h2>${activeCollection === "all" ? "Nothing available right now." : `No garments in ${escapeHtml(activeName || "this collection")} right now.`}</h2>
+        <p>New garments will appear here when ready.</p>
       </div>`;
 }
 
@@ -199,9 +199,9 @@ function renderDetail(item) {
   </section>
   <section class="request-explainer">
     <span class="kicker nova-scotia-note">Designed in Nova Scotia</span>
-    <span class="kicker">Selected releases</span>
-    <h2>Produced individually.</h2>
-    <p>SHIPS releases selected garments and seasonal collections in small quantities. Availability, final pricing, and delivery details are confirmed personally. Custom print requests may be available for select garments.</p>
+    <span class="kicker">SHIPS streetwear</span>
+    <h2>Designed for repeat wear.</h2>
+    <p>Every SHIPS garment is selected for its quality, comfort, and place in an everyday wardrobe.</p>
     ${secondaryAction}
   </section>`;
 

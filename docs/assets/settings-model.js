@@ -1,17 +1,17 @@
 export const DEFAULT_APPEARANCE = {
-  home_kicker: "Independent clothing / Designed in Nova Scotia",
-  home_headline: "Designed, made, and shipped.",
-  home_intro: "SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections, selected garments, and small-batch releases.",
-  home_button_label: "View collection",
+  home_kicker: "Independent streetwear / Nova Scotia",
+  home_headline: "Streetwear, made to be worn.",
+  home_intro: "SHIPS is an independent streetwear brand based in Nova Scotia, focused on high-quality garments, original design, and clothing made for everyday rotation.",
+  home_button_label: "Shop SHIPS",
   show_process: true,
   hero_layout: "split",
   hero_height: "standard",
   hero_image_fit: "cover",
   header_logo: "wordmark-white",
   header_logo_size: "medium",
-  collection_kicker: "Designed in Nova Scotia / Garment catalogue",
-  collection_title: "Browse the collection.",
-  collection_intro: "Explore current garments, seasonal releases, and selected pieces from SHIPS.",
+  collection_kicker: "Designed in Nova Scotia / Streetwear",
+  collection_title: "Shop SHIPS.",
+  collection_intro: "Explore high-quality streetwear designed in Nova Scotia.",
   card_columns: "4",
   card_image_fit: "cover",
   corner_style: "square",
@@ -19,7 +19,7 @@ export const DEFAULT_APPEARANCE = {
   spacing: "standard",
   motion: "subtle",
   footer_middle: "Designed in Nova Scotia",
-  footer_right: "Independent garments and seasonal releases",
+  footer_right: "Independent streetwear",
   request_now_label: "Request now",
 };
 
@@ -44,9 +44,23 @@ const LEGACY_HEADER_LOGOS = {
   "ships-shop": "wordmark-white",
 };
 
+const LEGACY_COPY = {
+  home_kicker: "Independent clothing / Designed in Nova Scotia",
+  home_headline: "Designed, made, and shipped.",
+  home_intro: "SHIPS is an independent clothing project based in Nova Scotia, focused on seasonal collections, selected garments, and small-batch releases.",
+  home_button_label: "View collection",
+  collection_kicker: "Designed in Nova Scotia / Garment catalogue",
+  collection_title: "Browse the collection.",
+  collection_intro: "Explore current garments, seasonal releases, and selected pieces from SHIPS.",
+  footer_right: "Independent garments and seasonal releases",
+};
+
 export function normalizeAppearance(value = {}) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? { ...value } : {};
   if (LEGACY_HEADER_LOGOS[source.header_logo]) source.header_logo = LEGACY_HEADER_LOGOS[source.header_logo];
+  Object.entries(LEGACY_COPY).forEach(([key, oldValue]) => {
+    if (source[key] === oldValue) delete source[key];
+  });
   const result = { ...DEFAULT_APPEARANCE };
   Object.keys(DEFAULT_APPEARANCE).forEach((key) => {
     if (typeof DEFAULT_APPEARANCE[key] === "boolean") result[key] = source[key] !== undefined ? Boolean(source[key]) : DEFAULT_APPEARANCE[key];

@@ -160,7 +160,7 @@ export function normalizeItem(item = {}) {
     sizes: parseLines(item.sizes),
     colors: parseLines(item.colors),
     customization_options: parseLines(item.customization_options),
-    production_note: item.production_note || "Produced individually based on garment availability. Final availability, pricing, and delivery are confirmed before payment.",
+    production_note: item.production_note || "Availability, pricing, and delivery details are listed with each garment.",
     price_note: item.price_note || "Final price confirmed by email",
     item_mode: itemMode,
     request_subject: item.request_subject || "",
@@ -195,7 +195,7 @@ export function toPublicGarmentCopy(rawItem = {}) {
     ? `A selected ${eyebrow.toLowerCase()} from the current SHIPS collection.`
     : item.summary;
   const description = SERVICE_COPY_PATTERN.test(item.description)
-    ? "This garment is part of the current SHIPS collection and is produced individually based on garment availability."
+      ? "This garment is part of the current SHIPS collection and is selected for quality, comfort, and everyday wear."
     : item.description;
   return { ...item, eyebrow, summary, description };
 }
