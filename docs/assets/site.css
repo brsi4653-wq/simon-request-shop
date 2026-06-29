@@ -34,6 +34,13 @@ nav button:hover, nav button.active { color: var(--ink); background: var(--soft)
 .primary-action:hover { background: var(--accent); color: var(--ink); }
 .primary-action:disabled { opacity: .55; cursor: not-allowed; }
 .primary-action:disabled:hover { background: var(--ink); color: var(--surface); }
+.purchase-action-button { width: 130px; min-width: max-content; height: 40px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; overflow: hidden; border: 0; background: rgb(15, 15, 15); color: #fff; text-decoration: none; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; box-shadow: 5px 5px 10px rgba(0, 0, 0, .1); cursor: pointer; transition: transform .3s ease; }
+.purchase-action-button::before { content: ""; width: 130px; height: 130px; position: absolute; left: -100%; top: 0; border-radius: 50%; background: #fff; mix-blend-mode: difference; transition: transform .3s ease, border-radius .3s ease; }
+.purchase-action-button:hover::before { transform: translate(100%, -50%); border-radius: 0; }
+.purchase-action-button:active { transform: translate(5px, 5px); }
+.purchase-action-button span, .purchase-action-icon { position: relative; z-index: 1; }
+.purchase-action-icon { width: 16px; flex: 0 0 16px; }
+.purchase-action-icon path { fill: currentColor; }
 .secondary-action { margin-top: 18px; padding: 13px 18px; border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .secondary-action:hover { background: var(--soft); }
 .detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }

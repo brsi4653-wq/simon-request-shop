@@ -74,6 +74,13 @@ button, .quiet-button, .primary-button, .danger-button { border: 1px solid var(-
 .primary-button { background: var(--text); color: #fff; border-color: var(--text); }
 .quiet-button:hover, .icon-button:hover { background: var(--soft); }
 .danger-button { color: var(--danger); }
+.animated-delete-button { width: 50px; height: 50px; border: 0; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #141414; color: #fff; box-shadow: 0 0 20px rgba(0, 0, 0, .16); cursor: pointer; transition: width .3s ease, border-radius .3s ease, background-color .3s ease; }
+.animated-delete-button:hover { width: 140px; border-radius: 999px; background: #ff4545; }
+.animated-delete-button::before { content: "Delete"; position: absolute; top: -20px; color: #fff; font-size: 2px; opacity: 0; transition: transform .3s ease, font-size .3s ease, opacity .3s ease; }
+.animated-delete-button:hover::before { font-size: 13px; opacity: 1; transform: translateY(30px); }
+.animated-delete-icon { width: 12px; transition: width .3s ease, transform .3s ease; }
+.animated-delete-icon path { fill: currentColor; }
+.animated-delete-button:hover .animated-delete-icon { width: 50px; transform: translateY(60%); }
 .icon-button { width: 38px; height: 38px; border: 1px solid var(--line); background: var(--soft); font-size: 22px; cursor: pointer; }
 .new-collection-button { flex: 0 0 auto; border: 1px solid var(--line); padding: 8px 9px; background: var(--soft); color: var(--text); font-size: 10px; font-weight: 800; cursor: pointer; }
 .message { min-height: 21px; margin: 0; padding: 0 18px; color: var(--muted); }

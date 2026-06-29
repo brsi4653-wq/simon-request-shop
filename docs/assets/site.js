@@ -104,12 +104,20 @@ function productActionMarkup(item, className = "primary-action request-action") 
   const action = getProductAction(item, ORDER_EMAIL);
   if (action.disabled) return `<button class="${className}" type="button" disabled>${escapeHtml(action.label)}</button>`;
   if (action.type === "early-access") {
-    return `<button class="${className}" type="button" data-early-access="${escapeHtml(item.id)}">${escapeHtml(action.label)}</button>`;
+    return purchaseButtonMarkup("button", action.label, `data-early-access="${escapeHtml(item.id)}"`);
   }
   if (action.type === "stripe-checkout") {
-    return `<button class="${className}" type="button" data-stripe-checkout="${escapeHtml(item.id)}">${escapeHtml(action.label)}</button>`;
+    return purchaseButtonMarkup("button", action.label, `data-stripe-checkout="${escapeHtml(item.id)}"`);
+  }
+  if (action.type === "shopify") {
+    return purchaseButtonMarkup("a", action.label, `href="${escapeHtml(action.href)}"`);
   }
   return `<a class="${className}" href="${escapeHtml(action.href)}">${escapeHtml(action.type === "email" ? appearance.request_now_label : action.label)}</a>`;
+}
+
+function purchaseButtonMarkup(tag, label, attributes) {
+  const icon = `<svg class="purchase-action-icon" viewBox="0 0 576 512" aria-hidden="true"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16h448zm16 144v192c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224h480zM64 32C28.7 32 0 60.7 0 96v320c0 35.3 28.7 64 64 64h448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24h-48zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24h112c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg>`;
+  return `<${tag} class="purchase-action-button" ${tag === "button" ? 'type="button"' : ""} ${attributes}><span>${escapeHtml(label)}</span>${icon}</${tag}>`;
 }
 
 function renderHomepageFeature() {
