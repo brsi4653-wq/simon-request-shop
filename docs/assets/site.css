@@ -41,6 +41,9 @@ nav button:hover, nav button.active { color: var(--ink); background: var(--soft)
 .purchase-action-button span, .purchase-action-icon { position: relative; z-index: 1; }
 .purchase-action-icon { width: 16px; flex: 0 0 16px; }
 .purchase-action-icon path { fill: currentColor; }
+.purchase-action-button.is-disabled, .purchase-action-button:disabled { opacity: .58; cursor: not-allowed; filter: grayscale(.45); }
+.purchase-action-button.is-disabled:hover::before, .purchase-action-button:disabled:hover::before { transform: none; border-radius: 50%; }
+.purchase-action-button.is-disabled:active, .purchase-action-button:disabled:active { transform: none; }
 .secondary-action { margin-top: 18px; padding: 13px 18px; border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .secondary-action:hover { background: var(--soft); }
 .detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
