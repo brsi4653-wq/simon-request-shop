@@ -7,7 +7,7 @@ test("appearance settings provide complete safe defaults", () => {
   const settings = normalizeAppearance();
   assert.equal(settings.home_headline, DEFAULT_APPEARANCE.home_headline);
   assert.equal(settings.card_columns, "4");
-  assert.equal(settings.header_logo, "ships-white");
+  assert.equal(settings.header_logo, "wordmark-white");
   assert.equal(settings.request_now_label, "Request now");
 });
 
@@ -25,9 +25,14 @@ test("appearance settings preserve valid choices and reject unsupported choices"
 });
 
 test("main SHIPS header logo follows theme contrast while alternate marks remain selectable", () => {
-  const darkLogo = "images/logos/ships-main-black-display.png";
-  const lightLogo = "images/logos/ships-main-white-display.png";
-  assert.equal(resolveHeaderLogo(darkLogo, "ships-white"), darkLogo);
-  assert.equal(resolveHeaderLogo(lightLogo, "ships-black"), lightLogo);
-  assert.equal(resolveHeaderLogo(darkLogo, "ships-tag"), "images/logos/ships-tag-display.png");
+  const darkLogo = "images/logos/ships-wordmark-black-transparent.png";
+  const lightLogo = "images/logos/ships-wordmark-white-transparent.png";
+  assert.equal(resolveHeaderLogo(darkLogo, "wordmark-white"), darkLogo);
+  assert.equal(resolveHeaderLogo(lightLogo, "wordmark-black"), lightLogo);
+  assert.equal(resolveHeaderLogo(darkLogo, "mark-white"), "images/logos/ships-mark-black-transparent.png");
+});
+
+test("saved legacy logo choices migrate to the new wordmark and compact marks", () => {
+  assert.equal(normalizeAppearance({ header_logo: "ships-white" }).header_logo, "wordmark-white");
+  assert.equal(normalizeAppearance({ header_logo: "ships-tag" }).header_logo, "mark-white");
 });

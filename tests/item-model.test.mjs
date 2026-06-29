@@ -38,6 +38,17 @@ test("available garments with a Shopify URL use a same-tab buy action", () => {
   assert.deepEqual(action, { type: "shopify", label: "BUY NOW", href: url, disabled: false });
 });
 
+test("available garments with Stripe checkout enabled use the backend checkout action", () => {
+  const action = getProductAction({
+    title: "Stripe Tee",
+    availability_status: "available",
+    stripe_checkout_enabled: true,
+    stripe_price_cents: 4500,
+    shopify_product_url: "https://example.myshopify.com/products/stripe-tee",
+  });
+  assert.deepEqual(action, { type: "stripe-checkout", label: "BUY NOW", href: "", disabled: false });
+});
+
 test("early-access garments ask for a code before exposing checkout", () => {
   const item = normalizeItem({
     title: "Early Hoodie",

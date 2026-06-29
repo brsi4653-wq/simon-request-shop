@@ -13,17 +13,17 @@ const oneLineRenewSql = await readFile(new URL("../RUN-THIS-SHIPS-RENEWAL.sql", 
 const shopifyMigrationSql = await readFile(new URL("../supabase-shop-shopify-links.sql", import.meta.url), "utf8").catch(() => "");
 const appearanceMigrationSql = await readFile(new URL("../supabase-shop-appearance-settings.sql", import.meta.url), "utf8").catch(() => "");
 
-test("homepage presents SHIPS as an independent clothing brand", () => {
-  assert.match(indexHtml, /Designed, made, and shipped\./);
-  assert.match(indexHtml, /independent clothing project based in Nova Scotia/i);
+test("homepage presents SHIPS as an accessible permanent streetwear brand", () => {
+  assert.match(indexHtml, /Streetwear, made to be worn\./);
+  assert.match(indexHtml, /independent streetwear brand based in Nova Scotia/i);
   assert.doesNotMatch(indexHtml, /View collection/);
   assert.doesNotMatch(indexHtml, /Browse garments/);
   assert.doesNotMatch(indexHtml, /Your idea|Send us your artwork|Send your idea|We design and ship it|Choose a garment/i);
 });
 
-test("homepage includes the permanent carbon removal commitment", () => {
-  assert.match(indexHtml, /Built For The Future\./);
-  assert.match(indexHtml, /Every SHIPS purchase contributes toward carbon removal efforts\./);
+test("homepage states the brand principle without artificial scarcity", () => {
+  assert.match(indexHtml, /Clothing without artificial scarcity\./);
+  assert.match(indexHtml, /Good streetwear should be available to everyone who wants to wear it\./);
   assert.match(siteCss, /\.impact-statement/);
 });
 
@@ -78,9 +78,10 @@ test("item modes use brand-first labels while preserving database values", () =>
   assert.doesNotMatch(itemModel, /Full custom design|Limited placement customization|Start a custom design/);
 });
 
-test("product pages keep custom printing secondary", () => {
-  assert.match(siteJs, /Custom print requests may be available for select garments/);
-  assert.doesNotMatch(siteJs, /Start with an idea|Send artwork|prepares the design|Start your design request/i);
+test("product pages focus on quality and everyday wear", () => {
+  assert.match(siteJs, /Designed for repeat wear\./);
+  assert.match(siteJs, /quality, comfort, and place in an everyday wardrobe/i);
+  assert.doesNotMatch(siteJs, /Start with an idea|Send artwork|prepares the design|Start your design request|limited drop/i);
 });
 
 test("catalogue reset deletes old items, excludes McLaren, clears images, and creates the requested collections", () => {
